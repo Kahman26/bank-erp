@@ -13,7 +13,9 @@ export default function ChangePasswordModal({ open, onClose }: { open: boolean; 
   const { message } = App.useApp();
 
   const submit = async () => {
-    const { old_password, new_password } = await form.validateFields();
+    const values = await form.validateFields().catch(() => null);
+    if (!values) return;
+    const { old_password, new_password } = values;
     try {
       await api.post("/auth/change-password", { old_password, new_password });
       message.success("Пароль изменён");

@@ -57,13 +57,16 @@ export default function UsersPage() {
   };
 
   const submit = async () => {
-    const values = await form.validateFields();
+    const values = await form.validateFields().catch(() => null);
+    if (!values) return;
     await save.mutateAsync(values);
     setEditing(null);
   };
 
   const submitReset = async () => {
-    const { password } = await pwdForm.validateFields();
+    const values = await pwdForm.validateFields().catch(() => null);
+    if (!values) return;
+    const { password } = values;
     await reset.mutateAsync({ id: resetFor!.id, password });
     setResetFor(null);
   };

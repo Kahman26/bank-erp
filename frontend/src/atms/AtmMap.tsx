@@ -26,6 +26,15 @@ function dotIcon(status: string): L.DivIcon {
   return icon;
 }
 
+function FixSize() {
+  const map = useMap();
+  useEffect(() => {
+    const t = setTimeout(() => map.invalidateSize(), 200);
+    return () => clearTimeout(t);
+  }, [map]);
+  return null;
+}
+
 function FitBounds({ points }: { points: Point[] }) {
   const map = useMap();
   useEffect(() => {
@@ -79,6 +88,7 @@ export default function AtmMap({
         {markers}
       </MarkerClusterGroup>
       <FitBounds points={points} />
+      <FixSize />
     </MapContainer>
   );
 }

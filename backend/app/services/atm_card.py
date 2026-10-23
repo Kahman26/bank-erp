@@ -21,6 +21,7 @@ from app.models import (
     User,
 )
 from app.schemas.atms import AtmCard, AtmCreate
+from app.services.lifecycle import allowed_statuses
 
 CERT_STATUS = {
     "revoked": "Отозван",
@@ -144,6 +145,9 @@ def build_card(db: Session, atm: Atm, show_ip: bool) -> AtmCard:
             "model_id": model.id,
             "device_type": atm.device_type.name,
             "address": f"{current.location.city_district}, {current.location.address}" if current else None,
+            "allowed_status_ids": allowed_statuses(db, atm),
+            "has_place": current is not None,
+            "current_place_from": current.placed_from if current else None,
         },
         main={
             "serial_number": atm.serial_number,
@@ -207,6 +211,7 @@ def build_card(db: Session, atm: Atm, show_ip: bool) -> AtmCard:
         modules=[
             {
                 "id": m.id,
+                "module_type_id": m.module_type_id,
                 "type": n(m.module_type_id),
                 "xfs": extra.get(m.module_type_id, {}).get("xfs"),
                 "vendor": m.vendor,

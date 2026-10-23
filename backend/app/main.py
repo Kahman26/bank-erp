@@ -4,7 +4,7 @@ from sqlalchemy import text
 from sqlalchemy.exc import IntegrityError
 
 from app import audit  # noqa: F401 — включает журнал изменений
-from app.api import atm_models, atms, auth, imports, reference, users
+from app.api import atm_models, atms, auth, imports, lifecycle, reference, users
 from app.db import engine
 
 app = FastAPI(title="Справочник банкоматов", docs_url="/api/docs", openapi_url="/api/openapi.json")
@@ -39,5 +39,5 @@ def health() -> dict[str, str]:
     return {"status": "ok"}
 
 
-for module in (auth, users, reference, atm_models, atms, imports):
+for module in (auth, users, reference, atm_models, atms, imports, lifecycle):
     app.include_router(module.router, prefix="/api/v1")

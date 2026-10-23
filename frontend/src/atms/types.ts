@@ -114,7 +114,17 @@ export interface AtmCard {
   atm_code: string;
   edit: AtmEdit;
   updated_at: string;
-  header: { status_code: string; status: string; model: string; model_id: number; device_type: string; address: string | null };
+  header: {
+    status_code: string;
+    status: string;
+    model: string;
+    model_id: number;
+    device_type: string;
+    address: string | null;
+    allowed_status_ids: number[];
+    has_place: boolean;
+    current_place_from: string | null;
+  };
   main: {
     serial_number: string;
     inventory_number: string | null;
@@ -144,6 +154,7 @@ export interface AtmCard {
   processings: Processing[];
   modules: {
     id: number;
+    module_type_id: number;
     type: string;
     xfs: string | null;
     vendor: string | null;

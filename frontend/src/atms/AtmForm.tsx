@@ -48,7 +48,8 @@ export default function AtmForm(props: { open: boolean; onClose: () => void; onS
   );
 
   const submit = async () => {
-    const v = await form.validateFields();
+    const v = await form.validateFields().catch(() => null);
+    if (!v) return;
     const card = await save.mutateAsync({
       ...v,
       purchase_date: v.purchase_date?.format("YYYY-MM-DD") ?? null,

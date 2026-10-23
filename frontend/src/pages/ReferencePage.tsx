@@ -21,7 +21,8 @@ function DictsTab({ data: ref }: { data: ReferenceBundle }) {
   );
 
   const submit = async () => {
-    const v = await form.validateFields();
+    const v = await form.validateFields().catch(() => null);
+    if (!v) return;
     await save.mutateAsync(editing === "new" ? v : { name: v.name, sort: v.sort, is_active: v.is_active });
     setEditing(null);
   };
@@ -131,7 +132,9 @@ function TableTab<T extends { id: number }>(props: {
   });
 
   const submit = async () => {
-    await save.mutateAsync(await form.validateFields());
+    const values = await form.validateFields().catch(() => null);
+    if (!values) return;
+    await save.mutateAsync(values);
     setEditing(null);
   };
 

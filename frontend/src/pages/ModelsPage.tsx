@@ -74,7 +74,8 @@ export default function ModelsPage() {
   };
 
   const submit = async () => {
-    const v = await form.validateFields();
+    const v = await form.validateFields().catch(() => null);
+    if (!v) return;
     await save.mutateAsync({ ...v, end_of_support_date: v.end_of_support_date ? v.end_of_support_date.format("YYYY-MM-DD") : null });
     setEditing(null);
   };

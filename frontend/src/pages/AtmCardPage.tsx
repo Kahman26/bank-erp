@@ -27,6 +27,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 
 import { api, ApiError } from "@/api/client";
 import { useApiMutation, useReference } from "@/api/hooks";
+import AtmActions, { CloseRepairModal } from "@/atms/AtmActions";
 import AtmForm from "@/atms/AtmForm";
 import AtmMap from "@/atms/AtmMap";
 import { StatusTag } from "@/atms/status";
@@ -92,7 +93,9 @@ function ProcessingsModal({ card, open, onClose }: { card: AtmCard; open: boolea
       okText="Сохранить"
       afterOpenChange={(o) => o && form.setFieldsValue({ items: card.processings })}
       onOk={async () => {
-        const { items } = await form.validateFields();
+        const values = await form.validateFields().catch(() => null);
+        if (!values) return;
+        const { items } = values;
         await save.mutateAsync(items ?? []);
         onClose();
       }}
@@ -161,6 +164,7 @@ export default function AtmCardPage() {
   const { data: ref } = useReference();
   const [editOpen, setEditOpen] = useState(false);
   const [procOpen, setProcOpen] = useState(false);
+  const [closingEvent, setClosingEvent] = useState<number | null>(null);
   const { data: card, error, isLoading } = useQuery({
     queryKey: ["atm", Number(id)],
     queryFn: () => api.get<AtmCard>(`/atms/${id}`),
@@ -198,11 +202,14 @@ export default function AtmCardPage() {
           </Space>
         }
         extra={
-          can("edit") && (
-            <Button icon={<EditOutlined />} onClick={() => setEditOpen(true)}>
-              Изменить
-            </Button>
-          )
+          <Space wrap>
+            {can("operate") && <AtmActions card={card} />}
+            {can("edit") && (
+              <Button icon={<EditOutlined />} onClick={() => setEditOpen(true)}>
+                Изменить
+              </Button>
+            )}
+          </Space>
         }
       >
         <Typography.Paragraph type="secondary" style={{ marginTop: -8 }}>
@@ -217,6 +224,13 @@ export default function AtmCardPage() {
             style={{ marginBottom: 12 }}
             message={`Открыт ремонт с ${dt(openRepair.started_at)}: ${openRepair.problem}`}
             description={`Исполнитель: ${openRepair.performer}${openRepair.ticket_number ? `, заявка ${openRepair.ticket_number}` : ""}`}
+            action={
+              can("operate") && (
+                <Button size="small" onClick={() => setClosingEvent(openRepair.id)}>
+                  Закрыть ремонт
+                </Button>
+              )
+            }
           />
         )}
         {certIssues.length > 0 && (
@@ -457,8 +471,17 @@ export default function AtmCardPage() {
                     {
                       title: "Простой, ч",
                       dataIndex: "downtime_hours",
-                      width: 100,
-                      render: (v: number | null) => (v === null ? <Tag color="orange">открыт</Tag> : v),
+                      width: 110,
+                      render: (v: number | null, e) =>
+                        v !== null ? (
+                          v
+                        ) : can("operate") ? (
+                          <Button size="small" onClick={() => setClosingEvent(e.id)}>
+                            Закрыть
+                          </Button>
+                        ) : (
+                          <Tag color="orange">открыт</Tag>
+                        ),
                     },
                     { title: "Исполнитель", dataIndex: "performer", width: 150 },
                     { title: "Заявка", dataIndex: "ticket_number", width: 150, render: (v) => v ?? "—" },
@@ -552,6 +575,7 @@ export default function AtmCardPage() {
         />
       </Card>
       <AtmForm open={editOpen} onClose={() => setEditOpen(false)} card={card} onSaved={() => undefined} />
+      <CloseRepairModal card={card} eventId={closingEvent} onClose={() => setClosingEvent(null)} />
     </>
   );
 }
