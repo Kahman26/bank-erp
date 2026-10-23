@@ -5,6 +5,7 @@ from sqlalchemy.exc import IntegrityError
 
 from app import audit as _audit_listener  # noqa: F401 — включает журнал изменений
 from app.api import atm_models, atms, audit, auth, certificates, imports, lifecycle, reference, reports, users
+from app.config import settings
 from app.db import engine
 
 app = FastAPI(title="Справочник банкоматов", docs_url="/api/docs", openapi_url="/api/openapi.json")
@@ -30,6 +31,12 @@ async def integrity_error(_: Request, exc: IntegrityError) -> JSONResponse:
     else:
         detail = "Данные не прошли проверку целостности"
     return JSONResponse({"detail": detail}, status_code=409)
+
+
+@app.get("/api/v1/meta")
+def meta() -> dict[str, bool]:
+    """Открытые сведения о стенде — нужны странице входа до авторизации."""
+    return {"demo": bool(settings.demo_data_count.strip())}
 
 
 @app.get("/api/health")

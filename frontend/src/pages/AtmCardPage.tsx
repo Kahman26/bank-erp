@@ -191,7 +191,8 @@ export default function AtmCardPage() {
   return (
     <>
       <Space style={{ marginBottom: 12 }}>
-        <Button icon={<ArrowLeftOutlined />} onClick={() => navigate(-1)}>
+        {/* карточку открыли по прямой ссылке — «Назад» ведёт в список, а не прочь из приложения */}
+        <Button icon={<ArrowLeftOutlined />} onClick={() => (window.history.state?.idx ? navigate(-1) : navigate("/atms"))}>
           Назад
         </Button>
       </Space>

@@ -13,10 +13,11 @@ import {
   TeamOutlined,
   UserOutlined,
 } from "@ant-design/icons";
-import { Button, Drawer, Dropdown, Grid, Layout, Menu, Typography, type MenuProps } from "antd";
+import { Button, Drawer, Dropdown, Grid, Layout, Menu, Tag, Tooltip, Typography, type MenuProps } from "antd";
 import { useState } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 
+import { useIsDemo } from "@/api/hooks";
 import type { Permission } from "@/api/types";
 import { useAuth } from "@/auth/AuthContext";
 import ChangePasswordModal from "@/components/ChangePasswordModal";
@@ -40,6 +41,7 @@ export default function AppLayout() {
   const screens = Grid.useBreakpoint();
   const [pwdOpen, setPwdOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const demo = useIsDemo();
   // до первого замера useBreakpoint пуст — считаем экран широким, чтобы не мигало
   const mobile = screens.lg === false;
 
@@ -95,7 +97,15 @@ export default function AppLayout() {
           ) : (
             <span />
           )}
-          <Dropdown menu={{ items: userMenu }} trigger={["click"]}>
+          <span style={{ display: "flex", alignItems: "center", gap: 4 }}>
+            {demo && (
+              <Tooltip title="Демо-стенд: банкоматы, адреса, ремонты и сертификаты вымышленные">
+                <Tag color="gold" style={{ marginInlineEnd: 0 }}>
+                  демо-данные
+                </Tag>
+              </Tooltip>
+            )}
+            <Dropdown menu={{ items: userMenu }} trigger={["click"]}>
             <Button type="text" icon={<UserOutlined />}>
               {screens.sm ? (
                 <span>
@@ -104,6 +114,7 @@ export default function AppLayout() {
               ) : null}
             </Button>
           </Dropdown>
+          </span>
         </Layout.Header>
         <Layout.Content style={{ padding: screens.md ? 24 : 8, minWidth: 0 }}>
           <Outlet />

@@ -65,9 +65,29 @@ def bootstrap() -> None:
         db.commit()
 
 
-COMMANDS = {"bootstrap": bootstrap}
+def create_user(login: str, role: str, full_name: str) -> None:
+    """Создаёт или обновляет пользователя; пароль читается из stdin, чтобы не попасть в историю команд.
+
+    echo 'Пароль123' | python -m app.cli create-user demo.viewer viewer "Демо: просмотр"
+    """
+    password = sys.stdin.readline().strip()
+    if problem := password_problem(password):
+        sys.exit(problem)
+    with SessionLocal() as db:
+        user = db.scalar(select(User).where(func.lower(User.login) == login.lower()))
+        if user is None:
+            user = User(login=login)
+            db.add(user)
+        user.full_name, user.role = full_name, Role(role)
+        user.password_hash = hash_password(password)
+        user.is_active, user.must_change_password = True, False
+        db.commit()
+    print(f"user '{login}' ({role}) ready")
+
+
+COMMANDS = {"bootstrap": bootstrap, "create-user": create_user}
 
 if __name__ == "__main__":
-    if len(sys.argv) != 2 or sys.argv[1] not in COMMANDS:
-        sys.exit(f"usage: python -m app.cli [{'|'.join(COMMANDS)}]")
-    COMMANDS[sys.argv[1]]()
+    if len(sys.argv) < 2 or sys.argv[1] not in COMMANDS:
+        sys.exit(f"usage: python -m app.cli [{'|'.join(COMMANDS)}] ...")
+    COMMANDS[sys.argv[1]](*sys.argv[2:])

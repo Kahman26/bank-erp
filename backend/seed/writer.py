@@ -5,7 +5,7 @@ import csv
 import random
 from pathlib import Path
 
-from sqlalchemy import func, insert, select, text
+from sqlalchemy import bindparam, func, insert, select, text
 from sqlalchemy.orm import Session
 
 from app.db import Base
@@ -178,3 +178,59 @@ def dirty_rows(clean: list[dict[str, str]], seed: int) -> list[dict[str, str]]:
     spoil(13, "currencies", "UZS;EUR", "неизвестная валюта")
     rng.shuffle(base)
     return base
+
+
+# --- сброс демо-данных -----------------------------------------------------------------------------------
+
+# таблицы сети банкоматов; пользователи, справочники и журнал входов остаются
+DEMO_TABLES = [
+    "certificate",
+    "contract",
+    "module_replacement",
+    "service_event",
+    "placement",
+    "location",
+    "software",
+    "module",
+    "atm_processing",
+    "atm_status_history",
+    "atm_currency",
+    "atm_service",
+    "atm_scheme",
+    "atm",
+    "atm_model",
+    "manufacturer",
+    "branch",
+    "vendor",
+]
+DEMO_ENTITIES = (
+    "atm",
+    "atm_model",
+    "module",
+    "software",
+    "atm_processing",
+    "location",
+    "placement",
+    "service_event",
+    "certificate",
+    "contract",
+    "branch",
+    "vendor",
+    "manufacturer",
+)
+
+
+def reset_demo(db: Session, upload_dir: Path) -> None:
+    """Удаляет сеть банкоматов целиком. id начинаются заново, поэтому записи журнала о прежних
+    банкоматах тоже удаляются — иначе они указали бы на новые банкоматы с теми же id."""
+    db.execute(
+        text("delete from audit_log where entity in :e or atm_id is not null").bindparams(
+            bindparam("e", expanding=True)
+        ),
+        {"e": list(DEMO_ENTITIES)},
+    )
+    db.execute(text(f"truncate {', '.join(DEMO_TABLES)} restart identity cascade"))
+    docs = upload_dir / "certificates"
+    if docs.is_dir():
+        for f in docs.iterdir():
+            f.unlink(missing_ok=True)

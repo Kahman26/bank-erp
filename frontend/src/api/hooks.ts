@@ -6,6 +6,12 @@ import type { ReferenceBundle } from "./types";
 
 export const REFERENCE_KEY = ["reference"];
 
+/** Демо-стенд с вымышленными данными — показываем пометку, чтобы никто не принял данные за настоящие. */
+export function useIsDemo(): boolean {
+  const { data } = useQuery({ queryKey: ["meta"], queryFn: () => api.get<{ demo: boolean }>("/meta"), staleTime: Infinity });
+  return !!data?.demo;
+}
+
 export function useReference() {
   return useQuery({ queryKey: REFERENCE_KEY, queryFn: () => api.get<ReferenceBundle>("/reference"), staleTime: 60_000 });
 }

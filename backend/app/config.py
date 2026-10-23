@@ -15,6 +15,9 @@ class Settings(BaseSettings):
     # сканы документов (сертификаты); в контейнере — том uploads
     upload_dir: str = "/data/uploads"
 
+    # непустое значение — демо-стенд с вымышленными данными (интерфейс показывает пометку)
+    demo_data_count: str = ""
+
     # защита от перебора паролей
     login_max_failures: int = 5
     login_lock_minutes: int = 15
