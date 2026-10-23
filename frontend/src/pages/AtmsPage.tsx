@@ -1,6 +1,6 @@
-import { EnvironmentOutlined, PlusOutlined } from "@ant-design/icons";
+import { DownloadOutlined, EnvironmentOutlined, PlusOutlined } from "@ant-design/icons";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
-import { Button, Card, Input, Space, Table, Tag, Tooltip, Typography } from "antd";
+import { App, Button, Card, Input, Space, Table, Tag, Tooltip, Typography } from "antd";
 import type { SorterResult } from "antd/es/table/interface";
 import dayjs from "dayjs";
 import { useState } from "react";
@@ -21,6 +21,7 @@ export default function AtmsPage() {
   const [params, setParams] = useSearchParams();
   const navigate = useNavigate();
   const { can } = useAuth();
+  const { message } = App.useApp();
   const [creating, setCreating] = useState(false);
   const [search, setSearch] = useState(params.get("q") ?? "");
 
@@ -58,6 +59,12 @@ export default function AtmsPage() {
         <Space wrap>
           <Button icon={<EnvironmentOutlined />} onClick={() => navigate(`/map?${filterParams(params)}`)}>
             На карте
+          </Button>
+          <Button
+            icon={<DownloadOutlined />}
+            onClick={() => api.download(`/atms/export.xlsx?${filterParams(params)}`, "atms.xlsx").catch((e) => message.error(e.message))}
+          >
+            Excel
           </Button>
           {can("edit") && (
             <Button type="primary" icon={<PlusOutlined />} onClick={() => setCreating(true)}>

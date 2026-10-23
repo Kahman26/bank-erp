@@ -3,7 +3,7 @@ from datetime import date
 from pathlib import Path
 
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, status
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, Response
 from pydantic import BaseModel, Field, model_validator
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
@@ -21,6 +21,8 @@ from app.services.certificates import (
     modules_without_cert,
     summary,
 )
+from app.services.exports import certificates_export
+from app.services.xlsx import XLSX_MEDIA, content_disposition
 
 router = APIRouter(prefix="/certificates", tags=["certificates"])
 viewer = require(Perm.VIEW)
@@ -108,6 +110,13 @@ def list_certificates(f: CertQuery, db: Session = Depends(get_db), _: User = Dep
         .limit(f.page_size)
     )
     return CertPage(items=[CertRow.model_validate(dict(r._mapping)) for r in rows], total=total or 0)
+
+
+@router.get("/export.xlsx")
+def export_certificates(f: CertQuery, db: Session = Depends(get_db), user: User = Depends(viewer)) -> Response:
+    return Response(
+        certificates_export(db, f, user), media_type=XLSX_MEDIA, headers=content_disposition("certificates.xlsx")
+    )
 
 
 @router.get("/summary")

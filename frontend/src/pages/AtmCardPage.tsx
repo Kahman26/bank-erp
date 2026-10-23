@@ -1,7 +1,8 @@
-import { ArrowLeftOutlined, EditOutlined, WarningOutlined } from "@ant-design/icons";
+import { ArrowLeftOutlined, EditOutlined, FilePdfOutlined, WarningOutlined } from "@ant-design/icons";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Alert,
+  App,
   Button,
   Card,
   Col,
@@ -158,6 +159,7 @@ export default function AtmCardPage() {
   const { can } = useAuth();
   const { data: ref } = useReference();
   const qc = useQueryClient();
+  const { message } = App.useApp();
   const [editOpen, setEditOpen] = useState(false);
   const [procOpen, setProcOpen] = useState(false);
   const [closingEvent, setClosingEvent] = useState<number | null>(null);
@@ -202,6 +204,12 @@ export default function AtmCardPage() {
         extra={
           <Space wrap>
             {can("operate") && <AtmActions card={card} />}
+            <Button
+              icon={<FilePdfOutlined />}
+              onClick={() => api.download(`/atms/${card.id}/card.pdf`, `${card.atm_code}.pdf`).catch((e) => message.error(e.message))}
+            >
+              PDF
+            </Button>
             {can("edit") && (
               <Button icon={<EditOutlined />} onClick={() => setEditOpen(true)}>
                 Изменить

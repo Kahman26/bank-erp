@@ -15,8 +15,8 @@ import ImportPage from "@/pages/ImportPage";
 import LoginPage from "@/pages/LoginPage";
 import MapPage from "@/pages/MapPage";
 import ModelsPage from "@/pages/ModelsPage";
-import PlaceholderPage from "@/pages/PlaceholderPage";
 import ReferencePage from "@/pages/ReferencePage";
+import ReportsPage from "@/pages/ReportsPage";
 import UsersPage from "@/pages/UsersPage";
 
 dayjs.locale("ru");
@@ -48,7 +48,7 @@ const router = createBrowserRouter([
           { path: "map", element: <MapPage /> },
           { path: "models", element: <ModelsPage /> },
           { path: "certificates", element: <CertificatesPage /> },
-          { path: "reports", element: <PlaceholderPage title="Отчёты" stage="7 — выгрузки и отчёты" /> },
+          { path: "reports", element: <ReportsPage /> },
           {
             element: <RequirePerm perm="manage_reference" />,
             children: [

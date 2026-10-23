@@ -1,6 +1,6 @@
-import { PlusOutlined } from "@ant-design/icons";
+import { DownloadOutlined, PlusOutlined } from "@ant-design/icons";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Button, Card, Col, Input, Row, Select, Space, Statistic, Table, Tabs } from "antd";
+import { App, Button, Card, Col, Input, Row, Select, Space, Statistic, Table, Tabs } from "antd";
 import dayjs from "dayjs";
 import { useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
@@ -25,6 +25,7 @@ export default function CertificatesPage() {
   const { can } = useAuth();
   const { data: ref } = useReference();
   const qc = useQueryClient();
+  const { message } = App.useApp();
   const [params, setParams] = useSearchParams();
   const [creating, setCreating] = useState(false);
   const [search, setSearch] = useState(params.get("q") ?? "");
@@ -56,18 +57,26 @@ export default function CertificatesPage() {
     <Card
       title="Сертификаты"
       extra={
-        can("edit") && (
-          <Button type="primary" icon={<PlusOutlined />} onClick={() => setCreating(true)}>
-            Добавить
+        <Space wrap>
+          <Button
+            icon={<DownloadOutlined />}
+            onClick={() => api.download(`/certificates/export.xlsx?${query}`, "certificates.xlsx").catch((e) => message.error(e.message))}
+          >
+            Excel
           </Button>
-        )
+          {can("edit") && (
+            <Button type="primary" icon={<PlusOutlined />} onClick={() => setCreating(true)}>
+              Добавить
+            </Button>
+          )}
+        </Space>
       }
     >
       <Row gutter={[12, 12]} style={{ marginBottom: 16 }}>
         {TILES.map((t) => (
           <Col xs={12} sm={8} lg={4} key={t.key}>
             <Card size="small" hoverable onClick={() => pickTile(t.key)}>
-              <Statistic title={t.title} value={summary?.[t.key] ?? "…"} valueStyle={{ color: summary?.[t.key] ? t.color : undefined }} />
+              <Statistic groupSeparator=" " title={t.title} value={summary?.[t.key] ?? "…"} valueStyle={{ color: summary?.[t.key] ? t.color : undefined }} />
             </Card>
           </Col>
         ))}

@@ -1,6 +1,6 @@
 from datetime import date
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Response, status
 from sqlalchemy import delete, func, select
 from sqlalchemy.orm import Session
 
@@ -20,6 +20,7 @@ from app.models import (
 )
 from app.schemas.atms import AtmCard, AtmCreate, AtmIn, AtmPage, AtmRow, ContractIn, MapPoints, ProcessingIn
 from app.services.atm_card import build_card, load_atm
+from app.services.atm_pdf import atm_pdf
 from app.services.atm_query import (
     SORT_COLUMNS,
     FilterQuery,
@@ -29,6 +30,8 @@ from app.services.atm_query import (
     base_select,
     list_columns,
 )
+from app.services.exports import atm_export
+from app.services.xlsx import XLSX_MEDIA, content_disposition
 
 router = APIRouter(prefix="/atms", tags=["atms"])
 
@@ -56,6 +59,24 @@ def map_points(f: FilterQuery, db: Session = Depends(get_db), _: User = Depends(
     ).all()
     points = [(r[0], r[1], float(r[2]), float(r[3]), r[4]) for r in rows if r[2] is not None]
     return MapPoints(points=points, total=len(rows), without_location=len(rows) - len(points))
+
+
+@router.get("/export.xlsx")
+def export_atms(f: FilterQuery, db: Session = Depends(get_db), user: User = Depends(require(Perm.VIEW))) -> Response:
+    return Response(atm_export(db, f, user), media_type=XLSX_MEDIA, headers=content_disposition("atms.xlsx"))
+
+
+@router.get("/{atm_id}/card.pdf")
+def card_pdf(atm_id: int, db: Session = Depends(get_db), user: User = Depends(require(Perm.VIEW))) -> Response:
+    atm = load_atm(db, atm_id)
+    if atm is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Банкомат не найден")
+    card = build_card(db, atm, show_ip=False)
+    return Response(
+        atm_pdf(card, user.full_name),
+        media_type="application/pdf",
+        headers=content_disposition(f"{atm.atm_code}.pdf"),
+    )
 
 
 @router.get("/{atm_id}", response_model=AtmCard)
