@@ -10,7 +10,8 @@ COPY requirements.txt .
 RUN pip install -r requirements.txt
 
 COPY . .
-RUN useradd --system --uid 10001 app && chmod +x docker-entrypoint.sh
+# CRLF из Windows-редакторов ломает shebang — нормализуем на всякий случай
+RUN sed -i "s/\r$//" docker-entrypoint.sh && useradd --system --uid 10001 app && chmod +x docker-entrypoint.sh
 USER app
 
 EXPOSE 8000
