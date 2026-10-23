@@ -5,7 +5,7 @@ import { MapContainer, Marker, Popup, TileLayer, useMap } from "react-leaflet";
 import MarkerClusterGroup from "react-leaflet-cluster";
 import { Link } from "react-router-dom";
 
-import { STATUS_COLORS } from "./status";
+import { STATUS_COLORS } from "./statusColors";
 
 export type Point = [number, string, number, number, string];
 

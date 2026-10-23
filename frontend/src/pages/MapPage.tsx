@@ -8,8 +8,9 @@ import { api } from "@/api/client";
 import { useReference } from "@/api/hooks";
 import type { AtmModel } from "@/api/types";
 import AtmMap from "@/atms/AtmMap";
-import FilterPanel, { filterParams } from "@/atms/FilterPanel";
-import { STATUS_COLORS } from "@/atms/status";
+import FilterPanel from "@/atms/FilterPanel";
+import { filterParams } from "@/atms/filters";
+import { STATUS_COLORS } from "@/atms/statusColors";
 import type { MapPoints } from "@/atms/types";
 
 export default function MapPage() {
