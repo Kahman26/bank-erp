@@ -8,7 +8,10 @@ import { createBrowserRouter, Navigate, Outlet, RouterProvider } from "react-rou
 import type { Permission } from "@/api/types";
 import { AuthProvider, useAuth } from "@/auth/AuthContext";
 import AppLayout from "@/layout/AppLayout";
+import AtmCardPage from "@/pages/AtmCardPage";
+import AtmsPage from "@/pages/AtmsPage";
 import LoginPage from "@/pages/LoginPage";
+import MapPage from "@/pages/MapPage";
 import ModelsPage from "@/pages/ModelsPage";
 import PlaceholderPage from "@/pages/PlaceholderPage";
 import ReferencePage from "@/pages/ReferencePage";
@@ -38,8 +41,9 @@ const router = createBrowserRouter([
         element: <AppLayout />,
         children: [
           { index: true, element: <Navigate to="/atms" replace /> },
-          { path: "atms", element: <PlaceholderPage title="Банкоматы" stage="3 — список, карточка, карта" /> },
-          { path: "map", element: <PlaceholderPage title="Карта банкоматов" stage="3 — список, карточка, карта" /> },
+          { path: "atms", element: <AtmsPage /> },
+          { path: "atms/:id", element: <AtmCardPage /> },
+          { path: "map", element: <MapPage /> },
           { path: "models", element: <ModelsPage /> },
           { path: "certificates", element: <PlaceholderPage title="Сертификаты" stage="6 — сертификаты и гарантии" /> },
           { path: "reports", element: <PlaceholderPage title="Отчёты" stage="7 — выгрузки и отчёты" /> },

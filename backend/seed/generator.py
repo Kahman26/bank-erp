@@ -512,11 +512,12 @@ class Generator:
 
     # --- сертификаты -------------------------------------------------------------------------------------
 
-    def _cert(self, years: int, **target) -> dict:
+    def _cert(self, years: int, risk: float = 1.0, **target) -> dict:
         """Действующий сертификат: срок окончания распределён так, что ~5 % истекают в ближайшие 90 дней,
-        ~2 % уже истекли, остальные действуют дольше."""
+        ~2 % уже истекли, остальные действуют дольше. risk < 1 — реже (сертификаты моделей банк продлевает
+        централизованно, иначе «истекающим» оказался бы весь парк модели)."""
         rng = self.rng
-        roll = rng.random()
+        roll = rng.random() / risk
         if roll < 0.02:
             offset = -rng.randrange(1, 180)
         elif roll < 0.07:
@@ -549,16 +550,23 @@ class Generator:
         )
 
     def _model_certificates(self) -> None:
+        story = (self.ref.models.get("NCR Atleos|SelfServ 22e"), self.ref.schemes.get("unionpay"))
         for model_id in self.ref.models.values():
             for scheme_id in self.ref.schemes.values():
                 cert = self._cert(
                     3,
+                    risk=0.01,
                     atm_model_id=model_id,
                     payment_scheme_id=scheme_id,
                     cert_type_id=self.ref.d("cert_type", "scheme"),
                 )
                 cert["source_id"] = self.ref.d("cert_source", "scheme")
-            self._cert(3, atm_model_id=model_id, cert_type_id=self.ref.d("cert_type", "emv_l2"))
+                if (model_id, scheme_id) == story:
+                    # сюжет для демо: у старой модели скоро истекает сертификация UnionPay
+                    cert["valid_until"] = self.today + timedelta(days=45)
+                    cert["issued_at"] = cert["valid_until"] - timedelta(days=3 * 365)
+                    cert["manual_status"] = None
+            self._cert(3, risk=0.01, atm_model_id=model_id, cert_type_id=self.ref.d("cert_type", "emv_l2"))
 
     def _module_certificate(self, module: dict, installed: date) -> None:
         cert_type = {
