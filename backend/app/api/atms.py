@@ -1,3 +1,5 @@
+from datetime import date
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import delete, func, select
 from sqlalchemy.orm import Session
@@ -9,13 +11,14 @@ from app.models import (
     Atm,
     AtmProcessing,
     AtmStatusHistory,
+    Contract,
     Currency,
     DictItem,
     Location,
     PaymentScheme,
     User,
 )
-from app.schemas.atms import AtmCard, AtmCreate, AtmIn, AtmPage, AtmRow, MapPoints, ProcessingIn
+from app.schemas.atms import AtmCard, AtmCreate, AtmIn, AtmPage, AtmRow, ContractIn, MapPoints, ProcessingIn
 from app.services.atm_card import build_card, load_atm
 from app.services.atm_query import (
     SORT_COLUMNS,
@@ -115,5 +118,34 @@ def set_processings(
     db.flush()
     db.add_all(AtmProcessing(atm_id=atm_id, **p.model_dump()) for p in data)
     db.commit()  # дубль Terminal ID / Merchant ID в процессинге → 409
+    db.expire_all()
+    return build_card(db, load_atm(db, atm_id), show_ip=True)
+
+
+def add_months(d: date, months: int) -> date:
+    y, m = divmod(d.month - 1 + months, 12)
+    year, month = d.year + y, m + 1
+    days = [31, 29 if year % 4 == 0 and (year % 100 or year % 400 == 0) else 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+    return date(year, month, min(d.day, days[month - 1]))
+
+
+@router.put("/{atm_id}/contract", response_model=AtmCard)
+def set_contract(
+    atm_id: int, data: ContractIn, db: Session = Depends(get_db), _: User = Depends(require(Perm.EDIT))
+) -> AtmCard:
+    atm = load_atm(db, atm_id)
+    if atm is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Банкомат не найден")
+    values = data.model_dump(exclude={"auto_warranty"})
+    if data.auto_warranty:
+        # окончание гарантии = дата покупки + гарантийный срок модели
+        if atm.purchase_date is None or atm.model.warranty_months is None:
+            raise HTTPException(status.HTTP_400_BAD_REQUEST, "Для расчёта нужны дата покупки и гарантийный срок модели")
+        values["warranty_until"] = add_months(atm.purchase_date, atm.model.warranty_months)
+    contract = db.scalar(select(Contract).where(Contract.atm_id == atm_id)) or Contract(atm_id=atm_id)
+    for field, value in values.items():
+        setattr(contract, field, value)
+    db.add(contract)
+    db.commit()
     db.expire_all()
     return build_card(db, load_atm(db, atm_id), show_ip=True)

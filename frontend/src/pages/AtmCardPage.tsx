@@ -1,5 +1,5 @@
 import { ArrowLeftOutlined, EditOutlined, WarningOutlined } from "@ant-design/icons";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Alert,
   Button,
@@ -30,21 +30,16 @@ import { useApiMutation, useReference } from "@/api/hooks";
 import AtmActions, { CloseRepairModal } from "@/atms/AtmActions";
 import AtmForm from "@/atms/AtmForm";
 import AtmMap from "@/atms/AtmMap";
+import ContractModal from "@/atms/ContractModal";
 import { StatusTag } from "@/atms/status";
-import type { AtmCard, Certificate, LocationInfo, Processing } from "@/atms/types";
+import type { AtmCard, LocationInfo, Processing } from "@/atms/types";
 import { useAuth } from "@/auth/AuthContext";
+import CertForm from "@/certs/CertForm";
+import CertTable from "@/certs/CertTable";
 
 const d = (v: string | null | undefined) => (v ? dayjs(v).format("DD.MM.YYYY") : "—");
 const dt = (v: string | null | undefined) => (v ? dayjs(v).format("DD.MM.YYYY HH:mm") : "—");
 const yes = (v: unknown) => (v === null || v === undefined ? "—" : v ? "да" : "нет");
-
-const CERT_COLORS: Record<Certificate["status"], string> = {
-  valid: "green",
-  expiring: "orange",
-  expired: "red",
-  renewal: "blue",
-  revoked: "default",
-};
 
 function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
@@ -162,9 +157,12 @@ export default function AtmCardPage() {
   const navigate = useNavigate();
   const { can } = useAuth();
   const { data: ref } = useReference();
+  const qc = useQueryClient();
   const [editOpen, setEditOpen] = useState(false);
   const [procOpen, setProcOpen] = useState(false);
   const [closingEvent, setClosingEvent] = useState<number | null>(null);
+  const [contractOpen, setContractOpen] = useState(false);
+  const [certOpen, setCertOpen] = useState(false);
   const { data: card, error, isLoading } = useQuery({
     queryKey: ["atm", Number(id)],
     queryFn: () => api.get<AtmCard>(`/atms/${id}`),
@@ -503,36 +501,27 @@ export default function AtmCardPage() {
               key: "certs",
               label: `Сертификаты (${card.certificates.length})`,
               children: (
-                <Table<Certificate>
-                  rowKey="id"
-                  size="small"
-                  scroll={{ x: 900 }}
-                  pagination={false}
-                  dataSource={card.certificates}
-                  columns={[
-                    { title: "Объект", dataIndex: "object_label" },
-                    { title: "Вид", dataIndex: "cert_type" },
-                    { title: "ПС", dataIndex: "payment_scheme", render: (v) => v ?? "—" },
-                    { title: "Номер", dataIndex: "cert_number" },
-                    { title: "Действует до", dataIndex: "valid_until", render: d },
-                    {
-                      title: "Статус",
-                      render: (_, x) => (
-                        <Space size={4}>
-                          <Tag color={CERT_COLORS[x.status]}>{x.status_label}</Tag>
-                          {x.needs_review && <Tag color="red">проверить</Tag>}
-                        </Space>
-                      ),
-                    },
-                    { title: "Кем предоставлен", dataIndex: "source", render: (v) => v ?? "—" },
-                  ]}
-                />
+                <>
+                  {can("edit") && (
+                    <Button style={{ marginBottom: 12 }} onClick={() => setCertOpen(true)}>
+                      Добавить сертификат
+                    </Button>
+                  )}
+                  <CertTable query={`atm_id=${card.id}&include_removed=true`} atmId={card.id} compact />
+                </>
               ),
             },
             {
               key: "contract",
               label: "Гарантия и договор",
-              children: card.contract ? (
+              children: (
+                <>
+                  {can("edit") && (
+                    <Button style={{ marginBottom: 12 }} onClick={() => setContractOpen(true)}>
+                      {card.contract ? "Изменить" : "Заполнить"}
+                    </Button>
+                  )}
+                  {card.contract ? (
                 <Descriptions size="small" column={1} bordered>
                   <Descriptions.Item label="Окончание гарантийной поддержки">
                     {d(card.contract.warranty_until)}
@@ -550,8 +539,10 @@ export default function AtmCardPage() {
                       : "—"}
                   </Descriptions.Item>
                 </Descriptions>
-              ) : (
-                <Empty description="Данные договора не заполнены" />
+                  ) : (
+                    <Empty description="Данные договора не заполнены" />
+                  )}
+                </>
               ),
             },
             {
@@ -576,6 +567,16 @@ export default function AtmCardPage() {
       </Card>
       <AtmForm open={editOpen} onClose={() => setEditOpen(false)} card={card} onSaved={() => undefined} />
       <CloseRepairModal card={card} eventId={closingEvent} onClose={() => setClosingEvent(null)} />
+      <ContractModal card={card} open={contractOpen} onClose={() => setContractOpen(false)} />
+      <CertForm
+        open={certOpen}
+        atm={card}
+        onClose={() => setCertOpen(false)}
+        onSaved={() => {
+          qc.invalidateQueries({ queryKey: ["certificates"] });
+          qc.invalidateQueries({ queryKey: ["atm", card.id] });
+        }}
+      />
     </>
   );
 }

@@ -85,6 +85,17 @@ class ProcessingIn(BaseModel):
     ip_address: str | None = Field(default=None, max_length=45)
 
 
+class ContractIn(BaseModel):
+    supplier_id: int | None = None
+    purchase_contract: str | None = Field(default=None, max_length=200)
+    purchase_price: Decimal | None = Field(default=None, ge=0)
+    price_currency: str | None = None
+    warranty_until: date | None = None
+    auto_warranty: bool = False  # посчитать от даты покупки и гарантийного срока модели
+    service_vendor_id: int | None = None
+    service_sla_hours: int | None = Field(default=None, ge=0, le=10000)
+
+
 class AtmCard(BaseModel):
     """Карточка банкомата целиком. Вложенные разделы — словари: их структура описана в коде сборки."""
 

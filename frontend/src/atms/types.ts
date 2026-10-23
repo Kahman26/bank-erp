@@ -185,6 +185,8 @@ export interface AtmCard {
   certificates: Certificate[];
   status_history: { status: string; changed_at: string; changed_by: string | null; comment: string | null }[];
   contract: {
+    supplier_id: number | null;
+    service_vendor_id: number | null;
     supplier: string | null;
     purchase_contract: string | null;
     purchase_price: string | null;

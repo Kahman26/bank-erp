@@ -281,6 +281,12 @@ def build_card(db: Session, atm: Atm, show_ip: bool) -> AtmCard:
                 "status_label": CERT_STATUS[st],
                 "needs_review": c.needs_review,
                 "source": n(c.source_id),
+                "has_document": c.document_path is not None,
+                "cert_type_id": c.cert_type_id,
+                "payment_scheme_id": c.payment_scheme_id,
+                "source_id": c.source_id,
+                "module_id": c.module_id,
+                "manual_status": c.manual_status,
             }
             for c in certs
         ],
@@ -295,6 +301,8 @@ def build_card(db: Session, atm: Atm, show_ip: bool) -> AtmCard:
         ],
         contract=(
             {
+                "supplier_id": contract.supplier_id,
+                "service_vendor_id": contract.service_vendor_id,
                 "supplier": contract.supplier.name if contract.supplier else None,
                 "purchase_contract": contract.purchase_contract,
                 "purchase_price": contract.purchase_price,

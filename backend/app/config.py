@@ -12,6 +12,9 @@ class Settings(BaseSettings):
     cookie_secure: bool = False
     session_ttl_hours: int = 8
 
+    # сканы документов (сертификаты); в контейнере — том uploads
+    upload_dir: str = "/data/uploads"
+
     # защита от перебора паролей
     login_max_failures: int = 5
     login_lock_minutes: int = 15
