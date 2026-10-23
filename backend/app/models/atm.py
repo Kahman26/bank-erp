@@ -326,7 +326,8 @@ class Certificate(Timestamps, Base):
     atm_id: Mapped[int | None] = mapped_column(ForeignKey("atm.id", ondelete="CASCADE"), index=True)
     module_id: Mapped[int | None] = mapped_column(ForeignKey("module.id", ondelete="CASCADE"), index=True)
     cert_type_id: Mapped[int] = mapped_column(ForeignKey("dict_item.id"))
-    payment_scheme_id: Mapped[int] = mapped_column(ForeignKey("payment_scheme.id"))
+    # EMV L1/L2 и PCI PTS выдают не платёжные системы — для них поле пустое
+    payment_scheme_id: Mapped[int | None] = mapped_column(ForeignKey("payment_scheme.id"))
     cert_number: Mapped[str] = mapped_column(String(100))
     issued_at: Mapped[date] = mapped_column(Date)
     valid_until: Mapped[date] = mapped_column(Date, index=True)
@@ -337,7 +338,7 @@ class Certificate(Timestamps, Base):
     needs_review: Mapped[bool] = mapped_column(default=False, server_default=false())
 
     cert_type: Mapped[DictItem] = relationship(foreign_keys=[cert_type_id])
-    payment_scheme: Mapped[PaymentScheme] = relationship()
+    payment_scheme: Mapped[PaymentScheme | None] = relationship()
 
 
 # --- 3.10 Договоры и гарантия ------------------------------------------------------------------------

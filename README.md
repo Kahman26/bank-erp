@@ -33,7 +33,19 @@ cd ../frontend
 npm install && npm run dev       # http://localhost:5173, /api проксируется на :8000
 ```
 
-Тесты: `cd backend && pytest`, `cd frontend && npm run lint && npm run build`.
+Тесты: `cd backend && pytest` (нужна отдельная база с `test` в имени — `TEST_DATABASE_URL`), `cd frontend && npm run lint && npm run build`.
+
+## Тестовые данные
+
+Реальных данных банка нет — генератор создаёт вымышленную, но правдоподобную сеть: реальные регионы и модели, вымышленные адреса, процессинги, ремонты, сертификаты.
+
+```bash
+cd backend
+python -m seed --count 1000 --db              # наполнить БД
+python -m seed --count 1000 --csv seed/out    # atms.csv и atms_dirty.csv (типичные ошибки Excel) для проверки импорта
+```
+
+На сервере база наполняется автоматически при первом старте, если в `.env` задан `DEMO_DATA_COUNT`.
 
 ## Автодеплой
 
