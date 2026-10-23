@@ -1,6 +1,6 @@
 import { PlusOutlined } from "@ant-design/icons";
 import { useQuery } from "@tanstack/react-query";
-import { Button, Card, Form, Input, Modal, Select, Space, Switch, Table, Tag, Typography } from "antd";
+import { Button, Card, Form, Input, Modal, Popconfirm, Select, Space, Switch, Table, Tag, Tooltip, Typography } from "antd";
 import dayjs from "dayjs";
 import { useState } from "react";
 
@@ -28,6 +28,7 @@ export default function UsersPage() {
   });
   const [editing, setEditing] = useState<UserRow | "new" | null>(null);
   const [resetFor, setResetFor] = useState<UserRow | null>(null);
+  const [search, setSearch] = useState("");
   const [form] = Form.useForm<UserForm>();
   const [pwdForm] = Form.useForm<{ password: string }>();
 
@@ -43,6 +44,10 @@ export default function UsersPage() {
         : api.patch(`/users/${(editing as UserRow).id}`, { full_name: v.full_name, department: v.department, role: v.role }),
     { success: "Сохранено", invalidate: [USERS_KEY] },
   );
+  const terminate = useApiMutation((u: UserRow) => api.post(`/users/${u.id}/terminate-sessions`), {
+    success: "Сеансы завершены — пользователю нужно войти заново",
+    invalidate: [USERS_KEY],
+  });
   const toggle = useApiMutation((u: UserRow) => api.patch(`/users/${u.id}`, { is_active: !u.is_active }), {
     invalidate: [USERS_KEY],
   });
@@ -82,10 +87,19 @@ export default function UsersPage() {
         </Button>
       }
     >
+      <Input.Search
+        allowClear
+        placeholder="ФИО, логин или подразделение"
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        style={{ maxWidth: 360, marginBottom: 12 }}
+      />
       <Table<UserRow>
         rowKey="id"
         loading={isLoading}
-        dataSource={users}
+        dataSource={users.filter((u) =>
+          [u.full_name, u.login, u.department ?? ""].some((x) => x.toLowerCase().includes(search.trim().toLowerCase())),
+        )}
         pagination={false}
         scroll={{ x: 900 }}
         columns={[
@@ -103,6 +117,21 @@ export default function UsersPage() {
               ) : (
                 <Tag color="green">Активен</Tag>
               ),
+          },
+          {
+            title: "Сеансы",
+            dataIndex: "active_sessions",
+            align: "right",
+            render: (n: number, u) => (
+              <Space size={4}>
+                {n}
+                {u.must_change_password && (
+                  <Tooltip title="Вошёл с временным паролем или ещё не входил — при входе сменит пароль">
+                    <Tag color="gold">временный пароль</Tag>
+                  </Tooltip>
+                )}
+              </Space>
+            ),
           },
           {
             title: "Последний вход",
@@ -126,6 +155,17 @@ export default function UsersPage() {
                   >
                     Сбросить пароль
                   </Button>
+                  {u.id !== me?.id && u.active_sessions > 0 && (
+                    <Popconfirm
+                      title="Завершить все сеансы?"
+                      description="Пользователя выбросит из системы на всех устройствах"
+                      okText="Завершить"
+                      cancelText="Отмена"
+                      onConfirm={() => terminate.mutate(u)}
+                    >
+                      <Button size="small">Завершить сеансы</Button>
+                    </Popconfirm>
+                  )}
                   {u.id !== me?.id && (
                     <Switch
                       size="small"
@@ -171,7 +211,7 @@ export default function UsersPage() {
             <Form.Item
               name="password"
               label="Временный пароль"
-              extra="Не короче 8 символов, буквы и цифры. Сообщите его сотруднику — сменить можно в меню профиля."
+              extra="Не короче 8 символов, буквы и цифры. Сообщите его сотруднику: при первом входе система попросит сменить пароль."
               rules={[{ required: true, min: 8 }]}
             >
               <Input.Password autoComplete="new-password" />

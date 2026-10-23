@@ -9,8 +9,10 @@ import type { Permission } from "@/api/types";
 import { AuthProvider, useAuth } from "@/auth/AuthContext";
 import AppLayout from "@/layout/AppLayout";
 import AtmCardPage from "@/pages/AtmCardPage";
+import AuditPage from "@/pages/AuditPage";
 import AtmsPage from "@/pages/AtmsPage";
 import CertificatesPage from "@/pages/CertificatesPage";
+import ForcePasswordPage from "@/pages/ForcePasswordPage";
 import ImportPage from "@/pages/ImportPage";
 import LoginPage from "@/pages/LoginPage";
 import MapPage from "@/pages/MapPage";
@@ -27,7 +29,8 @@ const queryClient = new QueryClient({
 
 function RequireAuth() {
   const { user } = useAuth();
-  return user ? <Outlet /> : <LoginPage />;
+  if (!user) return <LoginPage />;
+  return user.must_change_password ? <ForcePasswordPage /> : <Outlet />;
 }
 
 function RequirePerm({ perm }: { perm: Permission }) {
@@ -57,6 +60,7 @@ const router = createBrowserRouter([
             ],
           },
           { element: <RequirePerm perm="manage_users" />, children: [{ path: "users", element: <UsersPage /> }] },
+          { element: <RequirePerm perm="superadmin" />, children: [{ path: "audit", element: <AuditPage /> }] },
           { path: "*", element: <Navigate to="/atms" replace /> },
         ],
       },

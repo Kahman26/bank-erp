@@ -9,6 +9,7 @@ export interface Me {
   role: RoleCode;
   role_label: string;
   permissions: Permission[];
+  must_change_password: boolean;
 }
 
 export interface UserRow {
@@ -21,6 +22,8 @@ export interface UserRow {
   last_login_at: string | null;
   locked_until: string | null;
   created_at: string;
+  must_change_password: boolean;
+  active_sessions: number;
 }
 
 export interface DictItem {

@@ -36,6 +36,8 @@ def get_current_user(request: Request, db: Session = Depends(get_db)) -> User:
 
 def require(perm: Perm) -> Callable[..., User]:
     def dependency(user: User = Depends(get_current_user)) -> User:
+        if user.must_change_password:
+            raise HTTPException(status.HTTP_403_FORBIDDEN, "Смените временный пароль, чтобы продолжить работу")
         if perm not in perms_of(user.role):
             raise HTTPException(status.HTTP_403_FORBIDDEN, "Недостаточно прав")
         return user

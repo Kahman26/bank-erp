@@ -16,6 +16,8 @@ class AuditLog(Base):
     user_id: Mapped[int | None] = mapped_column(ForeignKey("app_user.id", ondelete="SET NULL"))
     entity: Mapped[str] = mapped_column(String(50))
     entity_id: Mapped[int | None]
-    action: Mapped[str] = mapped_column(String(10))  # create / update / delete
+    action: Mapped[str] = mapped_column(String(10))  # create / update / delete / login / login_fail / lock
+    # банкомат, к которому относится запись (для вкладки «Журнал» в карточке)
+    atm_id: Mapped[int | None] = mapped_column(index=True)
     # для update — {"поле": [было, стало]}, для create/delete — снимок значений
     changes: Mapped[dict] = mapped_column(JSONB, default=dict)

@@ -1,7 +1,7 @@
 from datetime import datetime
 from enum import StrEnum
 
-from sqlalchemy import CheckConstraint, DateTime, ForeignKey, Index, String, func, true
+from sqlalchemy import CheckConstraint, DateTime, ForeignKey, Index, String, false, func, true
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db import Base
@@ -37,6 +37,8 @@ class User(Timestamps, Base):
     last_login_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     failed_logins: Mapped[int] = mapped_column(default=0, server_default="0")
     locked_until: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    # пароль задал администратор — при входе сотрудник обязан сменить его на свой
+    must_change_password: Mapped[bool] = mapped_column(default=False, server_default=false())
 
     sessions: Mapped[list["UserSession"]] = relationship(back_populates="user", cascade="all, delete-orphan")
 

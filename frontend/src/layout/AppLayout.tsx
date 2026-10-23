@@ -5,13 +5,15 @@ import {
   CloudUploadOutlined,
   DatabaseOutlined,
   EnvironmentOutlined,
+  HistoryOutlined,
   KeyOutlined,
   LogoutOutlined,
+  MenuOutlined,
   SafetyCertificateOutlined,
   TeamOutlined,
   UserOutlined,
 } from "@ant-design/icons";
-import { Button, Dropdown, Grid, Layout, Menu, Typography, type MenuProps } from "antd";
+import { Button, Drawer, Dropdown, Grid, Layout, Menu, Typography, type MenuProps } from "antd";
 import { useState } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 
@@ -28,6 +30,7 @@ const ITEMS: { key: string; label: string; icon: React.ReactNode; perm: Permissi
   { key: "/import", label: "Загрузка данных", icon: <CloudUploadOutlined />, perm: "manage_reference" },
   { key: "/reference", label: "Справочники", icon: <BookOutlined />, perm: "manage_reference" },
   { key: "/users", label: "Пользователи", icon: <TeamOutlined />, perm: "manage_users" },
+  { key: "/audit", label: "Журнал изменений", icon: <HistoryOutlined />, perm: "superadmin" },
 ];
 
 export default function AppLayout() {
@@ -36,38 +39,62 @@ export default function AppLayout() {
   const location = useLocation();
   const screens = Grid.useBreakpoint();
   const [pwdOpen, setPwdOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  // до первого замера useBreakpoint пуст — считаем экран широким, чтобы не мигало
+  const mobile = screens.lg === false;
 
   const selected = ITEMS.find((i) => location.pathname.startsWith(i.key))?.key;
   const userMenu: MenuProps["items"] = [
     { key: "pwd", icon: <KeyOutlined />, label: "Сменить пароль", onClick: () => setPwdOpen(true) },
     { key: "logout", icon: <LogoutOutlined />, label: "Выйти", onClick: logout },
   ];
+  const title = (
+    <div style={{ color: "#fff", padding: "18px 20px", fontWeight: 600, fontSize: 15, lineHeight: 1.3 }}>
+      Справочник банкоматов
+    </div>
+  );
+  const menu = (
+    <Menu
+      theme="dark"
+      mode="inline"
+      selectedKeys={selected ? [selected] : []}
+      items={ITEMS.filter((i) => can(i.perm)).map(({ key, label, icon }) => ({ key, label, icon }))}
+      onClick={({ key }) => {
+        navigate(key);
+        setMenuOpen(false);
+      }}
+    />
+  );
 
   return (
     <Layout style={{ minHeight: "100vh" }}>
-      <Layout.Sider breakpoint="lg" collapsedWidth={0} width={220} theme="dark">
-        <div style={{ color: "#fff", padding: "18px 20px", fontWeight: 600, fontSize: 15, lineHeight: 1.3 }}>
-          Справочник банкоматов
-        </div>
-        <Menu
-          theme="dark"
-          mode="inline"
-          selectedKeys={selected ? [selected] : []}
-          items={ITEMS.filter((i) => can(i.perm)).map(({ key, label, icon }) => ({ key, label, icon }))}
-          onClick={({ key }) => navigate(key)}
-        />
-      </Layout.Sider>
-      <Layout>
+      {!mobile && (
+        <Layout.Sider width={220} theme="dark" style={{ position: "sticky", top: 0, height: "100vh", overflow: "auto" }}>
+          {title}
+          {menu}
+        </Layout.Sider>
+      )}
+      <Layout style={{ minWidth: 0 }}>
         <Layout.Header
           style={{
             background: "#fff",
-            padding: "0 16px",
+            padding: "0 12px",
             display: "flex",
-            justifyContent: "flex-end",
+            justifyContent: "space-between",
             alignItems: "center",
             borderBottom: "1px solid #f0f0f0",
+            position: "sticky",
+            top: 0,
+            zIndex: 10,
           }}
         >
+          {mobile ? (
+            <Button type="text" icon={<MenuOutlined />} onClick={() => setMenuOpen(true)} aria-label="Меню">
+              Банкоматы
+            </Button>
+          ) : (
+            <span />
+          )}
           <Dropdown menu={{ items: userMenu }} trigger={["click"]}>
             <Button type="text" icon={<UserOutlined />}>
               {screens.sm ? (
@@ -78,10 +105,21 @@ export default function AppLayout() {
             </Button>
           </Dropdown>
         </Layout.Header>
-        <Layout.Content style={{ padding: screens.md ? 24 : 12 }}>
+        <Layout.Content style={{ padding: screens.md ? 24 : 8, minWidth: 0 }}>
           <Outlet />
         </Layout.Content>
       </Layout>
+      <Drawer
+        placement="left"
+        open={mobile && menuOpen}
+        onClose={() => setMenuOpen(false)}
+        width={260}
+        closable={false}
+        styles={{ body: { padding: 0, background: "#001529" }, header: { display: "none" } }}
+      >
+        {title}
+        {menu}
+      </Drawer>
       <ChangePasswordModal open={pwdOpen} onClose={() => setPwdOpen(false)} />
     </Layout>
   );

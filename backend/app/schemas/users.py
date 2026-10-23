@@ -13,6 +13,7 @@ class MeOut(BaseModel):
     role: str
     role_label: str
     permissions: list[str]
+    must_change_password: bool = False
 
 
 class UserOut(BaseModel):
@@ -27,6 +28,8 @@ class UserOut(BaseModel):
     last_login_at: datetime | None
     locked_until: datetime | None
     created_at: datetime
+    must_change_password: bool
+    active_sessions: int = 0
 
 
 class UserCreate(BaseModel):

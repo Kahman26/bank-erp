@@ -1,3 +1,5 @@
+from datetime import UTC, datetime
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import delete, func, select
 from sqlalchemy.orm import Session
@@ -31,8 +33,15 @@ def roles(_: User = Depends(require(Perm.MANAGE_USERS))) -> list[dict[str, str]]
 
 
 @router.get("", response_model=list[UserOut])
-def list_users(db: Session = Depends(get_db), _: User = Depends(require(Perm.MANAGE_USERS))) -> list[User]:
-    return list(db.scalars(select(User).order_by(User.full_name)))
+def list_users(db: Session = Depends(get_db), _: User = Depends(require(Perm.MANAGE_USERS))) -> list[UserOut]:
+    now = datetime.now(UTC)
+    sessions = dict(
+        db.execute(
+            select(UserSession.user_id, func.count()).where(UserSession.expires_at > now).group_by(UserSession.user_id)
+        ).all()
+    )
+    users = db.scalars(select(User).order_by(User.full_name))
+    return [UserOut.model_validate(u).model_copy(update={"active_sessions": sessions.get(u.id, 0)}) for u in users]
 
 
 @router.post("", response_model=UserOut, status_code=201)
@@ -50,6 +59,7 @@ def create_user(
         department=data.department,
         role=data.role,
         password_hash=hash_password(data.password),
+        must_change_password=True,
     )
     db.add(user)
     db.commit()
@@ -92,7 +102,19 @@ def reset_password(
     if problem := password_problem(data.password):
         raise HTTPException(status.HTTP_400_BAD_REQUEST, problem)
     user.password_hash = hash_password(data.password)
+    user.must_change_password = True
     user.locked_until = None
     user.failed_logins = 0
+    db.execute(delete(UserSession).where(UserSession.user_id == user.id))
+    db.commit()
+
+
+@router.post("/{user_id}/terminate-sessions", status_code=204)
+def terminate_sessions(
+    user_id: int, db: Session = Depends(get_db), actor: User = Depends(require(Perm.MANAGE_USERS))
+) -> None:
+    """Выход на всех устройствах: например, если сотрудник потерял телефон."""
+    user = _get(db, user_id)
+    _check_can_manage(actor, user.role)
     db.execute(delete(UserSession).where(UserSession.user_id == user.id))
     db.commit()

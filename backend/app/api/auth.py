@@ -12,7 +12,7 @@ from app.auth.permissions import perms_of
 from app.auth.security import hash_password, new_session_token, password_problem, token_hash, verify_password
 from app.config import settings
 from app.db import get_db
-from app.models import ROLE_LABELS, Role, User, UserSession
+from app.models import ROLE_LABELS, AuditLog, Role, User, UserSession
 from app.schemas.users import MeOut
 
 router = APIRouter(prefix="/auth", tags=["auth"])
@@ -42,6 +42,19 @@ class ChangePasswordIn(BaseModel):
     new_password: str
 
 
+def _log(db: Session, user: User | None, action: str, details: dict) -> None:
+    """Входы и неудачные попытки — в общий журнал изменений (видит суперадмин)."""
+    db.add(
+        AuditLog(
+            user_id=user.id if user else None,
+            entity="auth",
+            entity_id=user.id if user else None,
+            action=action,
+            changes=details,
+        )
+    )
+
+
 def me_out(user: User) -> MeOut:
     return MeOut(
         id=user.id,
@@ -51,6 +64,7 @@ def me_out(user: User) -> MeOut:
         role=user.role,
         role_label=ROLE_LABELS[Role(user.role)],
         permissions=sorted(perms_of(user.role)),
+        must_change_password=user.must_change_password,
     )
 
 
@@ -68,12 +82,15 @@ def login(data: LoginIn, request: Request, response: Response, db: Session = Dep
 
     if user is None or not user.is_active or not verify_password(data.password, user.password_hash):
         _ip_failures[ip].append(time.monotonic())
+        action = "login_fail"
         if user is not None:
             user.failed_logins += 1
             if user.failed_logins >= settings.login_max_failures:
                 user.locked_until = now + timedelta(minutes=settings.login_lock_minutes)
                 user.failed_logins = 0
-            db.commit()
+                action = "lock"
+        _log(db, user, action, {"login": data.login.strip()[:64], "ip": ip})
+        db.commit()
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, BAD_CREDENTIALS)
 
     user.failed_logins = 0
@@ -92,6 +109,7 @@ def login(data: LoginIn, request: Request, response: Response, db: Session = Dep
     )
     # заодно чистим протухшие сессии этого пользователя
     db.execute(delete(UserSession).where(UserSession.user_id == user.id, UserSession.expires_at < now))
+    _log(db, user, "login", {"ip": ip})
     db.commit()
     response.set_cookie(
         SESSION_COOKIE,
@@ -130,7 +148,10 @@ def change_password(
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "Текущий пароль указан неверно")
     if problem := password_problem(data.new_password):
         raise HTTPException(status.HTTP_400_BAD_REQUEST, problem)
+    if data.new_password == data.old_password:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Новый пароль совпадает с текущим")
     user.password_hash = hash_password(data.new_password)
+    user.must_change_password = False
     # остальные сессии пользователя закрываем, текущую оставляем
     current = token_hash(request.cookies.get(SESSION_COOKIE, ""))
     db.execute(delete(UserSession).where(UserSession.user_id == user.id, UserSession.token_hash != current))

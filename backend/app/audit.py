@@ -43,7 +43,15 @@ AUDITED = (
     User,
     Vendor,
 )
-SKIP = {"created_at", "updated_at", "password_hash", "failed_logins", "locked_until", "last_login_at"}
+SKIP = {
+    "created_at",
+    "updated_at",
+    "password_hash",
+    "failed_logins",
+    "locked_until",
+    "last_login_at",
+    "must_change_password",
+}
 
 
 def _plain(value: Any) -> Any:
@@ -60,14 +68,37 @@ def _columns(obj: Any) -> list[str]:
     return [c.key for c in inspect(obj).mapper.column_attrs if c.key not in SKIP]
 
 
+def _atm_id(session: Session, obj: Any) -> int | None:
+    """Банкомат, к которому относится изменение: сам банкомат, его узел, ремонт, сертификат узла и т. п."""
+    if isinstance(obj, Atm):
+        return obj.id
+    if atm_id := getattr(obj, "atm_id", None):
+        return atm_id
+    if module_id := getattr(obj, "module_id", None):
+        with session.no_autoflush:
+            module = session.get(Module, module_id)
+        return module.atm_id if module else None
+    return None
+
+
 @event.listens_for(Session, "after_flush")
 def _write_audit(session: Session, _ctx: Any) -> None:
+    if session.info.get("skip_audit"):
+        return
     user_id = session.info.get("user_id")
     rows: list[dict[str, Any]] = []
     for obj in session.new:
         if isinstance(obj, AUDITED):
             snap = {k: _plain(getattr(obj, k)) for k in _columns(obj)}
-            rows.append({"entity": obj.__tablename__, "entity_id": obj.id, "action": "create", "changes": snap})
+            rows.append(
+                {
+                    "entity": obj.__tablename__,
+                    "entity_id": obj.id,
+                    "action": "create",
+                    "changes": snap,
+                    "atm_id": _atm_id(session, obj),
+                }
+            )
     for obj in session.dirty:
         if not isinstance(obj, AUDITED) or not session.is_modified(obj, include_collections=False):
             continue
@@ -81,11 +112,27 @@ def _write_audit(session: Session, _ctx: Any) -> None:
                 if old != new:
                     diff[key] = [_plain(old), _plain(new)]
         if diff:
-            rows.append({"entity": obj.__tablename__, "entity_id": obj.id, "action": "update", "changes": diff})
+            rows.append(
+                {
+                    "entity": obj.__tablename__,
+                    "entity_id": obj.id,
+                    "action": "update",
+                    "changes": diff,
+                    "atm_id": _atm_id(session, obj),
+                }
+            )
     for obj in session.deleted:
         if isinstance(obj, AUDITED):
             snap = {k: _plain(getattr(obj, k)) for k in _columns(obj)}
-            rows.append({"entity": obj.__tablename__, "entity_id": obj.id, "action": "delete", "changes": snap})
+            rows.append(
+                {
+                    "entity": obj.__tablename__,
+                    "entity_id": obj.id,
+                    "action": "delete",
+                    "changes": snap,
+                    "atm_id": _atm_id(session, obj),
+                }
+            )
     if rows:
         for r in rows:
             r["user_id"] = user_id

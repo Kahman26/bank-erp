@@ -29,6 +29,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { api, ApiError } from "@/api/client";
 import { useApiMutation, useReference } from "@/api/hooks";
 import AtmActions, { CloseRepairModal } from "@/atms/AtmActions";
+import AuditTable from "@/audit/AuditTable";
 import AtmForm from "@/atms/AtmForm";
 import AtmMap from "@/atms/AtmMap";
 import ContractModal from "@/atms/ContractModal";
@@ -194,14 +195,13 @@ export default function AtmCardPage() {
           Назад
         </Button>
       </Space>
-      <Card
-        title={
+      <Card>
+        {/* заголовок переносится: на телефоне кнопки уходят под код банкомата, а не вытесняют его */}
+        <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", gap: 12, marginBottom: 12 }}>
           <Space wrap>
-            <span style={{ fontSize: 20 }}>{card.atm_code}</span>
+            <span style={{ fontSize: 20, fontWeight: 600 }}>{card.atm_code}</span>
             <StatusTag code={card.header.status_code} name={card.header.status} />
           </Space>
-        }
-        extra={
           <Space wrap>
             {can("operate") && <AtmActions card={card} />}
             <Button
@@ -216,9 +216,8 @@ export default function AtmCardPage() {
               </Button>
             )}
           </Space>
-        }
-      >
-        <Typography.Paragraph type="secondary" style={{ marginTop: -8 }}>
+        </div>
+        <Typography.Paragraph type="secondary">
           <Link to={`/models`}>{card.header.model}</Link> · {card.header.device_type}
           {card.header.address && ` · ${card.header.address}`}
         </Typography.Paragraph>
@@ -570,6 +569,15 @@ export default function AtmCardPage() {
                 />
               ),
             },
+            ...(can("superadmin")
+              ? [
+                  {
+                    key: "audit",
+                    label: "Журнал",
+                    children: <AuditTable query={`atm_id=${card.id}`} hideAtm />,
+                  },
+                ]
+              : []),
           ]}
         />
       </Card>
