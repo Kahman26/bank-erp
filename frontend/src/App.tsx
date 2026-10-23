@@ -10,6 +10,7 @@ import { AuthProvider, useAuth } from "@/auth/AuthContext";
 import AppLayout from "@/layout/AppLayout";
 import AtmCardPage from "@/pages/AtmCardPage";
 import AtmsPage from "@/pages/AtmsPage";
+import ImportPage from "@/pages/ImportPage";
 import LoginPage from "@/pages/LoginPage";
 import MapPage from "@/pages/MapPage";
 import ModelsPage from "@/pages/ModelsPage";
@@ -47,7 +48,13 @@ const router = createBrowserRouter([
           { path: "models", element: <ModelsPage /> },
           { path: "certificates", element: <PlaceholderPage title="Сертификаты" stage="6 — сертификаты и гарантии" /> },
           { path: "reports", element: <PlaceholderPage title="Отчёты" stage="7 — выгрузки и отчёты" /> },
-          { element: <RequirePerm perm="manage_reference" />, children: [{ path: "reference", element: <ReferencePage /> }] },
+          {
+            element: <RequirePerm perm="manage_reference" />,
+            children: [
+              { path: "reference", element: <ReferencePage /> },
+              { path: "import", element: <ImportPage /> },
+            ],
+          },
           { element: <RequirePerm perm="manage_users" />, children: [{ path: "users", element: <UsersPage /> }] },
           { path: "*", element: <Navigate to="/atms" replace /> },
         ],

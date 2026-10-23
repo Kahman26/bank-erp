@@ -2,6 +2,7 @@ import {
   AppstoreOutlined,
   BarChartOutlined,
   BookOutlined,
+  CloudUploadOutlined,
   DatabaseOutlined,
   EnvironmentOutlined,
   KeyOutlined,
@@ -24,6 +25,7 @@ const ITEMS: { key: string; label: string; icon: React.ReactNode; perm: Permissi
   { key: "/models", label: "Модели", icon: <AppstoreOutlined />, perm: "view" },
   { key: "/certificates", label: "Сертификаты", icon: <SafetyCertificateOutlined />, perm: "view" },
   { key: "/reports", label: "Отчёты", icon: <BarChartOutlined />, perm: "view" },
+  { key: "/import", label: "Загрузка данных", icon: <CloudUploadOutlined />, perm: "manage_reference" },
   { key: "/reference", label: "Справочники", icon: <BookOutlined />, perm: "manage_reference" },
   { key: "/users", label: "Пользователи", icon: <TeamOutlined />, perm: "manage_users" },
 ];
