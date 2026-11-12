@@ -55,7 +55,6 @@ a, button, input, [tabindex] { scroll-margin-top: 96px; }
 .account-info strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 500; font-size: 13px; color: var(--brand-green-dark); }
 .account-info > span { color: var(--text-secondary); font-size: 12px; }
 .account-chevron { margin-inline-start: 8px; font-size: 10px; color: var(--text-secondary); }
-.demo-tag { margin-inline-end: 0; padding: 3px 9px; border-radius: 6px; font-size: 11px; }
 .menu-toggle.ant-btn { width: 44px; height: 44px; flex: none; }
 .app-content { min-width: 0; padding: 32px; }
 .app-content:focus { outline: none; }

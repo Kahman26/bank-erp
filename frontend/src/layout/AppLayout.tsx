@@ -13,11 +13,10 @@ import {
   SafetyCertificateOutlined,
   TeamOutlined,
 } from "@ant-design/icons";
-import { Avatar, Button, Drawer, Dropdown, Grid, Layout, Menu, Tag, Tooltip, type MenuProps } from "antd";
+import { Avatar, Button, Drawer, Dropdown, Grid, Layout, Menu, type MenuProps } from "antd";
 import { useState } from "react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 
-import { useIsDemo } from "@/api/hooks";
 import type { Permission } from "@/api/types";
 import { useAuth } from "@/auth/AuthContext";
 import BrandLogo from "@/components/BrandLogo";
@@ -42,7 +41,6 @@ export default function AppLayout() {
   const screens = Grid.useBreakpoint();
   const [pwdOpen, setPwdOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-  const demo = useIsDemo();
   const mobile = screens.lg === false;
   const active = ITEMS.find((i) => location.pathname.startsWith(i.key));
   const initials = user?.full_name.trim().split(/\s+/).slice(0, 2).map((s) => s[0]).join("").toUpperCase();
@@ -95,11 +93,6 @@ export default function AppLayout() {
             <div className="header-breadcrumb"><span>Hamkorbank</span><span className="breadcrumb-divider" aria-hidden="true">/</span><span>{active?.label ?? "Банкоматы"}</span></div>
           </div>
           <div className="header-account">
-            {demo && (
-              <Tooltip title="Демо-стенд: банкоматы, адреса, ремонты и сертификаты вымышленные">
-                <Tag className="demo-tag" color="gold">Демо-данные</Tag>
-              </Tooltip>
-            )}
             <Dropdown menu={{ items: userMenu }} trigger={["click"]}>
               <Button type="text" className="account-button" aria-label={"Меню пользователя: " + user?.full_name}>
                 <Avatar size={36}>{initials}</Avatar>

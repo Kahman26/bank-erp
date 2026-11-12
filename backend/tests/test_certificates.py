@@ -143,3 +143,26 @@ def test_contract_and_auto_warranty(login_as) -> None:
     assert contract["service_sla_hours"] == 24
     op = login_as(Role.OPERATOR)
     assert op.put(f"/api/v1/atms/{atm['id']}/contract", json={}).status_code == 403
+
+
+def test_registry_after_dashboard_and_exports(login_as) -> None:
+    """The registry must still load after report queries warm the SQL cache."""
+    _seed(20)
+    client = login_as(Role.VIEWER)
+    expected_total = None
+    for _ in range(3):
+        for path in (
+            "/api/v1/reports/dashboard",
+            "/api/v1/certificates/summary",
+            "/api/v1/certificates?object=model",
+            "/api/v1/certificates/export.xlsx",
+        ):
+            response = client.get(path)
+            assert response.status_code == 200, (path, response.text)
+        response = client.get("/api/v1/certificates", params={"page_size": 500})
+        assert response.status_code == 200, response.text
+        page = response.json()
+        assert page["items"]
+        if expected_total is None:
+            expected_total = page["total"]
+        assert page["total"] == expected_total

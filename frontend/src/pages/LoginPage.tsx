@@ -4,7 +4,6 @@ import { useState } from "react";
 
 import { api } from "@/api/client";
 import type { Me } from "@/api/types";
-import { useIsDemo } from "@/api/hooks";
 import { useAuth } from "@/auth/AuthContext";
 import AuthShell from "@/components/AuthShell";
 
@@ -17,7 +16,6 @@ export default function LoginPage() {
   const { setUser } = useAuth();
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const demo = useIsDemo();
 
   const onFinish = async (values: LoginForm) => {
     setLoading(true);
@@ -38,9 +36,6 @@ export default function LoginPage() {
         Вход в систему
       </Typography.Title>
       <Typography.Paragraph type="secondary">Войдите под своей учётной записью банка</Typography.Paragraph>
-      {demo && (
-        <Alert type="warning" showIcon style={{ marginBottom: 16 }} message="Демо-стенд: все данные вымышленные" />
-      )}
       {error && <Alert type="error" message={error} showIcon style={{ marginBottom: 16 }} />}
       <Form<LoginForm> size="large" layout="vertical" onFinish={onFinish} requiredMark={false}>
         <Form.Item name="login" label="Логин" rules={[{ required: true, message: "Введите логин" }]}>
