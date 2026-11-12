@@ -25,6 +25,7 @@ export default function FilterPanel({ models }: { models?: { id: number; manufac
       mode="multiple"
       allowClear
       maxTagCount="responsive"
+      aria-label={placeholder}
       placeholder={placeholder}
       style={{ width: "100%" }}
       value={params.getAll(key)}
@@ -63,6 +64,7 @@ export default function FilterPanel({ models }: { models?: { id: number; manufac
 
   return (
     <Collapse
+      className="filter-panel"
       size="small"
       style={{ marginBottom: 12 }}
       items={[
@@ -72,7 +74,7 @@ export default function FilterPanel({ models }: { models?: { id: number; manufac
             <Space>
               <FilterOutlined />
               Фильтры
-              {count > 0 && <Badge count={count} color="#1F4E79" />}
+              {count > 0 && <Badge count={count} color="var(--brand-green-dark)" />}
             </Space>
           ),
           extra:

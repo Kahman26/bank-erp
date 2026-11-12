@@ -6,6 +6,7 @@ import { useState, type ReactNode } from "react";
 import { api } from "@/api/client";
 import { REFERENCE_KEY, useApiMutation, useReference } from "@/api/hooks";
 import type { DictItem, ReferenceBundle } from "@/api/types";
+import PagePanel from "@/components/PagePanel";
 
 /** Простые списки: слева виды, справа значения выбранного вида. */
 function DictsTab({ data: ref }: { data: ReferenceBundle }) {
@@ -48,6 +49,7 @@ function DictsTab({ data: ref }: { data: ReferenceBundle }) {
           </Button>
         </Space>
         <Table<DictItem>
+          scroll={{ x: 600 }}
           rowKey="id"
           size="small"
           pagination={false}
@@ -212,7 +214,7 @@ export default function ReferencePage() {
   ];
 
   return (
-    <Card title="Справочники">
+    <PagePanel title="Справочники" description="Регионы, филиалы, поставщики и параметры учёта">
       <Tabs
         items={[
           { key: "dicts", label: "Списки значений", children: <DictsTab data={ref} /> },
@@ -332,6 +334,6 @@ export default function ReferencePage() {
           },
         ]}
       />
-    </Card>
+    </PagePanel>
   );
 }

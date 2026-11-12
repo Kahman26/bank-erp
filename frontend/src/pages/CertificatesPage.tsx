@@ -11,13 +11,15 @@ import CertForm from "@/certs/CertForm";
 import CertTable from "@/certs/CertTable";
 import { CERT_STATUS, type CertStatus, type CertSummary, type WithoutCertRow } from "@/certs/types";
 import { useAuth } from "@/auth/AuthContext";
+import { brand } from "@/theme/brand";
+import PagePanel from "@/components/PagePanel";
 
 const TILES: { key: CertStatus | "needs_review"; title: string; color?: string }[] = [
-  { key: "needs_review", title: "Требуют проверки", color: "#cf1322" },
-  { key: "expired", title: "Истекли", color: "#cf1322" },
-  { key: "expiring", title: "Истекают ≤ 90 дн.", color: "#d48806" },
-  { key: "renewal", title: "На продлении", color: "#1677ff" },
-  { key: "valid", title: "Действуют", color: "#389e0d" },
+  { key: "needs_review", title: "Требуют проверки", color: brand.error },
+  { key: "expired", title: "Истекли", color: brand.error },
+  { key: "expiring", title: "Истекают ≤ 90 дн.", color: brand.warning },
+  { key: "renewal", title: "На продлении", color: brand.info },
+  { key: "valid", title: "Действуют", color: brand.greenHover },
   { key: "revoked", title: "Отозваны" },
 ];
 
@@ -54,8 +56,9 @@ export default function CertificatesPage() {
   };
 
   return (
-    <Card
+    <PagePanel
       title="Сертификаты"
+      description="Сертификация оборудования и контроль сроков действия"
       extra={
         <Space wrap>
           <Button
@@ -75,7 +78,11 @@ export default function CertificatesPage() {
       <Row gutter={[12, 12]} style={{ marginBottom: 16 }}>
         {TILES.map((t) => (
           <Col xs={12} sm={8} lg={4} key={t.key}>
-            <Card size="small" hoverable onClick={() => pickTile(t.key)}>
+            <Card
+              className={"cert-summary-card" + ((t.key === "needs_review" ? params.get("needs_review") === "true" : params.getAll("status").includes(t.key)) ? " is-selected" : "")}
+              size="small" hoverable onClick={() => pickTile(t.key)}
+              role="link" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter") pickTile(t.key); }}
+            >
               <Statistic groupSeparator=" " title={t.title} value={summary?.[t.key] ?? "…"} valueStyle={{ color: summary?.[t.key] ? t.color : undefined }} />
             </Card>
           </Col>
@@ -183,6 +190,6 @@ export default function CertificatesPage() {
           qc.invalidateQueries({ queryKey: ["cert-summary"] });
         }}
       />
-    </Card>
+    </PagePanel>
   );
 }

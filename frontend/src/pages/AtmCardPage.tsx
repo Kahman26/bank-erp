@@ -200,7 +200,7 @@ export default function AtmCardPage() {
         {/* заголовок переносится: на телефоне кнопки уходят под код банкомата, а не вытесняют его */}
         <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", gap: 12, marginBottom: 12 }}>
           <Space wrap>
-            <span style={{ fontSize: 20, fontWeight: 600 }}>{card.atm_code}</span>
+            <h1 className="atm-card-code">{card.atm_code}</h1>
             <StatusTag code={card.header.status_code} name={card.header.status} />
           </Space>
           <Space wrap>

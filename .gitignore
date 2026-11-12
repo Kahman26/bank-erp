@@ -13,6 +13,7 @@ id_ed25519*
 docs/*
 !docs/tech-plan.md
 !docs/er-diagram.md
+!docs/hamkorbank-brand.md
 
 # IDE и инструменты
 .idea/

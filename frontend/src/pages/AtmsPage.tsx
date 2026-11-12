@@ -1,6 +1,6 @@
 import { DownloadOutlined, EnvironmentOutlined, PlusOutlined } from "@ant-design/icons";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
-import { App, Button, Card, Input, Space, Table, Tag, Tooltip, Typography } from "antd";
+import { App, Button, Input, Space, Table, Tag, Tooltip, Typography } from "antd";
 import type { SorterResult } from "antd/es/table/interface";
 import dayjs from "dayjs";
 import { useState } from "react";
@@ -14,6 +14,7 @@ import { filterParams } from "@/atms/filters";
 import { StatusTag } from "@/atms/status";
 import type { AtmPage, AtmRow } from "@/atms/types";
 import { useAuth } from "@/auth/AuthContext";
+import PagePanel from "@/components/PagePanel";
 
 const fmt = (d: string | null) => (d ? dayjs(d).format("DD.MM.YYYY") : "—");
 
@@ -53,8 +54,9 @@ export default function AtmsPage() {
       : null;
 
   return (
-    <Card
+    <PagePanel
       title="Банкоматы"
+      description="Учёт устройств, размещений и технического состояния"
       extra={
         <Space wrap>
           <Button icon={<EnvironmentOutlined />} onClick={() => navigate(`/map?${filterParams(params)}`)}>
@@ -75,18 +77,21 @@ export default function AtmsPage() {
       }
     >
       <Input.Search
+        aria-label="Поиск банкоматов"
+        className="registry-search"
         allowClear
         placeholder="Код, Terminal ID, серийный номер, адрес"
         value={search}
         onChange={(e) => setSearch(e.target.value)}
         onSearch={(v) => update({ q: v.trim() || undefined, page: undefined })}
-        style={{ marginBottom: 12, maxWidth: 480 }}
+        style={{ marginBottom: 16, maxWidth: 520 }}
         enterButton
       />
       <FilterPanel models={models} />
-      <Typography.Text type="secondary" style={{ display: "block", marginBottom: 8 }}>
-        Найдено: {data?.total ?? "…"}
-      </Typography.Text>
+      <div className="registry-summary">
+        <span>Реестр устройств</span>
+        <span className="result-count" role="status" aria-live="polite">Найдено: {data?.total?.toLocaleString("ru-RU") ?? "…"}</span>
+      </div>
       <Table<AtmRow>
         rowKey="id"
         size="middle"
@@ -212,6 +217,6 @@ export default function AtmsPage() {
         ]}
       />
       <AtmForm open={creating} onClose={() => setCreating(false)} onSaved={(card) => navigate(`/atms/${card.id}`)} />
-    </Card>
+    </PagePanel>
   );
 }

@@ -2,7 +2,6 @@ import { PlusOutlined } from "@ant-design/icons";
 import { useQuery } from "@tanstack/react-query";
 import {
   Button,
-  Card,
   Checkbox,
   Col,
   DatePicker,
@@ -25,6 +24,7 @@ import { api } from "@/api/client";
 import { useApiMutation, useReference } from "@/api/hooks";
 import type { AtmModel } from "@/api/types";
 import { useAuth } from "@/auth/AuthContext";
+import PagePanel from "@/components/PagePanel";
 
 const MODELS_KEY = ["atm-models"];
 
@@ -81,8 +81,9 @@ export default function ModelsPage() {
   };
 
   return (
-    <Card
+    <PagePanel
       title="Модели банкоматов"
+      description="Модели, комплектация и сроки поддержки оборудования"
       extra={
         canEdit && (
           <Button type="primary" icon={<PlusOutlined />} onClick={() => open("new")}>
@@ -123,6 +124,7 @@ export default function ModelsPage() {
       />
 
       <Drawer
+        aria-label={viewing ? `${viewing.manufacturer_name} ${viewing.model_name}` : "Модель банкомата"}
         title={viewing ? `${viewing.manufacturer_name} ${viewing.model_name}` : ""}
         open={viewing !== null}
         onClose={() => setViewing(null)}
@@ -261,6 +263,6 @@ export default function ModelsPage() {
           </Row>
         </Form>
       </Drawer>
-    </Card>
+    </PagePanel>
   );
 }

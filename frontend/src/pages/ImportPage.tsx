@@ -4,7 +4,6 @@ import {
   Alert,
   App,
   Button,
-  Card,
   Checkbox,
   Col,
   Result,
@@ -22,6 +21,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { api } from "@/api/client";
+import PagePanel from "@/components/PagePanel";
 
 interface RowIssue {
   line: number;
@@ -108,7 +108,7 @@ export default function ImportPage() {
 
   if (result) {
     return (
-      <Card title="Загрузка данных">
+      <PagePanel title="Загрузка данных" description="Проверка и загрузка реестра из Excel или CSV">
         <Result
           status={result.skipped ? "warning" : "success"}
           title="Загрузка завершена"
@@ -130,7 +130,7 @@ export default function ImportPage() {
             </Button>,
           ]}
         />
-      </Card>
+      </PagePanel>
     );
   }
 
@@ -138,8 +138,9 @@ export default function ImportPage() {
   const canCommit = preview && preview.create + preview.update > 0 && (preview.errors === 0 || skipErrors);
 
   return (
-    <Card
+    <PagePanel
       title="Загрузка данных"
+      description="Проверка и загрузка реестра из Excel или CSV"
       extra={
         <Button icon={<DownloadOutlined />} onClick={() => api.download("/import/atms/template", "atm-import-template.xlsx").catch((e) => message.error(e.message))}>
           Шаблон Excel
@@ -268,6 +269,6 @@ export default function ImportPage() {
           </Space>
         </>
       )}
-    </Card>
+    </PagePanel>
   );
 }

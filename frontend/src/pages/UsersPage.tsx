@@ -1,6 +1,6 @@
 import { PlusOutlined } from "@ant-design/icons";
 import { useQuery } from "@tanstack/react-query";
-import { Button, Card, Form, Input, Modal, Popconfirm, Select, Space, Switch, Table, Tag, Tooltip, Typography } from "antd";
+import { Button, Form, Input, Modal, Popconfirm, Select, Space, Switch, Table, Tag, Tooltip, Typography } from "antd";
 import dayjs from "dayjs";
 import { useState } from "react";
 
@@ -8,6 +8,7 @@ import { api } from "@/api/client";
 import { useApiMutation } from "@/api/hooks";
 import type { RoleCode, UserRow } from "@/api/types";
 import { useAuth } from "@/auth/AuthContext";
+import PagePanel from "@/components/PagePanel";
 
 const USERS_KEY = ["users"];
 
@@ -79,8 +80,9 @@ export default function UsersPage() {
   const editable = (u: UserRow) => u.role !== "superadmin" || can("superadmin");
 
   return (
-    <Card
+    <PagePanel
       title="Пользователи"
+      description="Учётные записи сотрудников и права доступа"
       extra={
         <Button type="primary" icon={<PlusOutlined />} onClick={() => open("new")}>
           Добавить
@@ -237,6 +239,6 @@ export default function UsersPage() {
           </Form.Item>
         </Form>
       </Modal>
-    </Card>
+    </PagePanel>
   );
 }

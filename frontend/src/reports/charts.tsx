@@ -2,8 +2,8 @@ import { Tooltip, Typography } from "antd";
 import type { ReactNode } from "react";
 
 /** Величины — один оттенок бренда; цвет не кодирует ранг. */
-const BAR = "#1F4E79";
-const TRACK = "#F0F2F5";
+const BAR = "var(--brand-green)";
+const TRACK = "#EDF3EF";
 
 export interface BarItem {
   key: string;
@@ -63,7 +63,7 @@ export function Columns({ items, height = 160 }: { items: BarItem[]; height?: nu
       </div>
       <div style={{ display: "flex", gap: 4, marginTop: 4 }}>
         {items.map((i) => (
-          <div key={i.key} style={{ flex: 1, textAlign: "center", fontSize: 11, color: "#8C8C8C", overflow: "hidden", whiteSpace: "nowrap" }}>
+          <div key={i.key} style={{ flex: 1, textAlign: "center", fontSize: 12, color: "var(--text-secondary)", overflow: "hidden", whiteSpace: "nowrap" }}>
             {i.label}
           </div>
         ))}
@@ -105,7 +105,7 @@ export function StackedBar({ segments }: { segments: Segment[] }) {
             <span style={{ width: 10, height: 10, borderRadius: 2, background: s.color, flex: "none" }} />
             <span style={{ flex: 1 }}>{s.label}</span>
             <span style={{ fontVariantNumeric: "tabular-nums" }}>{s.value.toLocaleString("ru-RU")}</span>
-            <span style={{ color: "#8C8C8C", width: 44, textAlign: "right", fontVariantNumeric: "tabular-nums" }}>
+            <span style={{ color: "var(--text-secondary)", width: 44, textAlign: "right", fontVariantNumeric: "tabular-nums" }}>
               {((s.value / total) * 100).toFixed(1)}%
             </span>
           </div>

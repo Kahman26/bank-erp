@@ -3,6 +3,7 @@ import { App as AntApp, ConfigProvider } from "antd";
 import ruRU from "antd/locale/ru_RU";
 import dayjs from "dayjs";
 import "dayjs/locale/ru";
+import { useEffect, useState } from "react";
 import { createBrowserRouter, Navigate, Outlet, RouterProvider } from "react-router-dom";
 
 import type { Permission } from "@/api/types";
@@ -20,6 +21,7 @@ import ModelsPage from "@/pages/ModelsPage";
 import ReferencePage from "@/pages/ReferencePage";
 import ReportsPage from "@/pages/ReportsPage";
 import UsersPage from "@/pages/UsersPage";
+import { bankTheme } from "@/theme/brand";
 
 dayjs.locale("ru");
 
@@ -69,8 +71,17 @@ const router = createBrowserRouter([
 ]);
 
 export default function App() {
+  const [reducedMotion, setReducedMotion] = useState(() => window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+
+  useEffect(() => {
+    const media = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const update = () => setReducedMotion(media.matches);
+    media.addEventListener("change", update);
+    return () => media.removeEventListener("change", update);
+  }, []);
+
   return (
-    <ConfigProvider locale={ruRU} theme={{ token: { colorPrimary: "#1F4E79", borderRadius: 6 } }}>
+    <ConfigProvider locale={ruRU} theme={{ ...bankTheme, token: { ...bankTheme.token, motion: !reducedMotion } }}>
       <AntApp>
         <QueryClientProvider client={queryClient}>
           <AuthProvider>

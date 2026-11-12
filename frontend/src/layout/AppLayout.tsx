@@ -4,6 +4,7 @@ import {
   BookOutlined,
   CloudUploadOutlined,
   DatabaseOutlined,
+  DownOutlined,
   EnvironmentOutlined,
   HistoryOutlined,
   KeyOutlined,
@@ -11,27 +12,27 @@ import {
   MenuOutlined,
   SafetyCertificateOutlined,
   TeamOutlined,
-  UserOutlined,
 } from "@ant-design/icons";
-import { Button, Drawer, Dropdown, Grid, Layout, Menu, Tag, Tooltip, Typography, type MenuProps } from "antd";
+import { Avatar, Button, Drawer, Dropdown, Grid, Layout, Menu, Tag, Tooltip, type MenuProps } from "antd";
 import { useState } from "react";
-import { Outlet, useLocation, useNavigate } from "react-router-dom";
+import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 
 import { useIsDemo } from "@/api/hooks";
 import type { Permission } from "@/api/types";
 import { useAuth } from "@/auth/AuthContext";
+import BrandLogo from "@/components/BrandLogo";
 import ChangePasswordModal from "@/components/ChangePasswordModal";
 
-const ITEMS: { key: string; label: string; icon: React.ReactNode; perm: Permission }[] = [
-  { key: "/atms", label: "Банкоматы", icon: <DatabaseOutlined />, perm: "view" },
-  { key: "/map", label: "Карта", icon: <EnvironmentOutlined />, perm: "view" },
-  { key: "/models", label: "Модели", icon: <AppstoreOutlined />, perm: "view" },
-  { key: "/certificates", label: "Сертификаты", icon: <SafetyCertificateOutlined />, perm: "view" },
-  { key: "/reports", label: "Отчёты", icon: <BarChartOutlined />, perm: "view" },
-  { key: "/import", label: "Загрузка данных", icon: <CloudUploadOutlined />, perm: "manage_reference" },
-  { key: "/reference", label: "Справочники", icon: <BookOutlined />, perm: "manage_reference" },
-  { key: "/users", label: "Пользователи", icon: <TeamOutlined />, perm: "manage_users" },
-  { key: "/audit", label: "Журнал изменений", icon: <HistoryOutlined />, perm: "superadmin" },
+const ITEMS: { key: string; label: string; icon: React.ReactNode; perm: Permission; group: "network" | "admin" }[] = [
+  { key: "/atms", label: "Банкоматы", icon: <DatabaseOutlined />, perm: "view", group: "network" },
+  { key: "/map", label: "Карта", icon: <EnvironmentOutlined />, perm: "view", group: "network" },
+  { key: "/models", label: "Модели", icon: <AppstoreOutlined />, perm: "view", group: "network" },
+  { key: "/certificates", label: "Сертификаты", icon: <SafetyCertificateOutlined />, perm: "view", group: "network" },
+  { key: "/reports", label: "Отчёты", icon: <BarChartOutlined />, perm: "view", group: "network" },
+  { key: "/import", label: "Загрузка данных", icon: <CloudUploadOutlined />, perm: "manage_reference", group: "admin" },
+  { key: "/reference", label: "Справочники", icon: <BookOutlined />, perm: "manage_reference", group: "admin" },
+  { key: "/users", label: "Пользователи", icon: <TeamOutlined />, perm: "manage_users", group: "admin" },
+  { key: "/audit", label: "Журнал изменений", icon: <HistoryOutlined />, perm: "superadmin", group: "admin" },
 ];
 
 export default function AppLayout() {
@@ -42,94 +43,85 @@ export default function AppLayout() {
   const [pwdOpen, setPwdOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const demo = useIsDemo();
-  // до первого замера useBreakpoint пуст — считаем экран широким, чтобы не мигало
   const mobile = screens.lg === false;
+  const active = ITEMS.find((i) => location.pathname.startsWith(i.key));
+  const initials = user?.full_name.trim().split(/\s+/).slice(0, 2).map((s) => s[0]).join("").toUpperCase();
 
-  const selected = ITEMS.find((i) => location.pathname.startsWith(i.key))?.key;
   const userMenu: MenuProps["items"] = [
     { key: "pwd", icon: <KeyOutlined />, label: "Сменить пароль", onClick: () => setPwdOpen(true) },
+    { type: "divider" },
     { key: "logout", icon: <LogoutOutlined />, label: "Выйти", onClick: logout },
   ];
-  const title = (
-    <div style={{ color: "#fff", padding: "18px 20px", fontWeight: 600, fontSize: 15, lineHeight: 1.3 }}>
-      Справочник банкоматов
+  const items: MenuProps["items"] = [
+    { key: "network", type: "group", label: "Сеть банкоматов", children: ITEMS.filter((i) => i.group === "network" && can(i.perm)).map(({ key, label, icon }) => ({ key, label, icon })) },
+    ...(ITEMS.some((i) => i.group === "admin" && can(i.perm))
+      ? [{ key: "admin", type: "group" as const, label: "Управление", children: ITEMS.filter((i) => i.group === "admin" && can(i.perm)).map(({ key, label, icon }) => ({ key, label, icon })) }]
+      : []),
+  ];
+  const sidebar = (
+    <div className="sidebar-inner">
+      <Link to="/atms" className="sidebar-brand" onClick={() => setMenuOpen(false)} aria-label="Hamkorbank — банкоматы">
+        <BrandLogo />
+        <span>Справочник банкоматов</span>
+      </Link>
+      <nav aria-label="Основная навигация" className="sidebar-nav">
+        <Menu
+          mode="inline"
+          selectedKeys={active ? [active.key] : []}
+          items={items}
+          onClick={({ key }) => {
+            navigate(key);
+            setMenuOpen(false);
+          }}
+        />
+      </nav>
+      <div className="sidebar-footer">
+        <img src="/brand/hamkorbank-mark.svg" width={24} height={24} alt="" />
+        <div><strong>Hamkorbank</strong><span>Рабочее пространство</span></div>
+      </div>
     </div>
-  );
-  const menu = (
-    <Menu
-      theme="dark"
-      mode="inline"
-      selectedKeys={selected ? [selected] : []}
-      items={ITEMS.filter((i) => can(i.perm)).map(({ key, label, icon }) => ({ key, label, icon }))}
-      onClick={({ key }) => {
-        navigate(key);
-        setMenuOpen(false);
-      }}
-    />
   );
 
   return (
-    <Layout style={{ minHeight: "100vh" }}>
-      {!mobile && (
-        <Layout.Sider width={220} theme="dark" style={{ position: "sticky", top: 0, height: "100vh", overflow: "auto" }}>
-          {title}
-          {menu}
-        </Layout.Sider>
-      )}
-      <Layout style={{ minWidth: 0 }}>
-        <Layout.Header
-          style={{
-            background: "#fff",
-            padding: "0 12px",
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            borderBottom: "1px solid #f0f0f0",
-            position: "sticky",
-            top: 0,
-            zIndex: 10,
-          }}
-        >
-          {mobile ? (
-            <Button type="text" icon={<MenuOutlined />} onClick={() => setMenuOpen(true)} aria-label="Меню">
-              Банкоматы
-            </Button>
-          ) : (
-            <span />
-          )}
-          <span style={{ display: "flex", alignItems: "center", gap: 4 }}>
+    <Layout className="app-shell">
+      <a className="skip-link" href="#main-content">К содержимому</a>
+      {!mobile && <Layout.Sider width={252} theme="light" className="app-sidebar">{sidebar}</Layout.Sider>}
+      <Layout className="app-workspace">
+        <Layout.Header className="app-header">
+          <div className="header-location">
+            {mobile && (
+              <Button type="text" className="menu-toggle" icon={<MenuOutlined />} onClick={() => setMenuOpen(true)} aria-label="Открыть меню" aria-expanded={menuOpen} />
+            )}
+            <div className="header-breadcrumb"><span>Hamkorbank</span><span className="breadcrumb-divider" aria-hidden="true">/</span><span>{active?.label ?? "Банкоматы"}</span></div>
+          </div>
+          <div className="header-account">
             {demo && (
               <Tooltip title="Демо-стенд: банкоматы, адреса, ремонты и сертификаты вымышленные">
-                <Tag color="gold" style={{ marginInlineEnd: 0 }}>
-                  демо-данные
-                </Tag>
+                <Tag className="demo-tag" color="gold">Демо-данные</Tag>
               </Tooltip>
             )}
             <Dropdown menu={{ items: userMenu }} trigger={["click"]}>
-            <Button type="text" icon={<UserOutlined />}>
-              {screens.sm ? (
-                <span>
-                  {user?.full_name} <Typography.Text type="secondary">· {user?.role_label}</Typography.Text>
-                </span>
-              ) : null}
-            </Button>
-          </Dropdown>
-          </span>
+              <Button type="text" className="account-button" aria-label={"Меню пользователя: " + user?.full_name}>
+                <Avatar size={36}>{initials}</Avatar>
+                <span className="account-info"><strong>{user?.full_name}</strong><span>{user?.role_label}</span></span>
+                <DownOutlined className="account-chevron" />
+              </Button>
+            </Dropdown>
+          </div>
         </Layout.Header>
-        <Layout.Content style={{ padding: screens.md ? 24 : 8, minWidth: 0 }}>
-          <Outlet />
-        </Layout.Content>
+        <Layout.Content id="main-content" tabIndex={-1} className="app-content"><Outlet /></Layout.Content>
       </Layout>
       <Drawer
+        title="Меню Hamkorbank"
+        aria-label="Меню Hamkorbank"
         placement="left"
         open={mobile && menuOpen}
         onClose={() => setMenuOpen(false)}
-        width={260}
-        closable={false}
-        styles={{ body: { padding: 0, background: "#001529" }, header: { display: "none" } }}
+        width={Math.min(292, typeof window === "undefined" ? 292 : window.innerWidth - 32)}
+        className="navigation-drawer"
+        styles={{ body: { padding: 0 }, header: { padding: "12px 20px" } }}
       >
-        {title}
-        {menu}
+        {sidebar}
       </Drawer>
       <ChangePasswordModal open={pwdOpen} onClose={() => setPwdOpen(false)} />
     </Layout>

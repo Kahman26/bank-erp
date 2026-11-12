@@ -1,12 +1,14 @@
-/** Цвет статуса — общий для таблицы, карточки и меток на карте. */
+import { brand } from "@/theme/brand";
+
+/** Shared by maps, charts and labelled status tags. */
 export const STATUS_COLORS: Record<string, string> = {
-  in_service: "#389e0d",
-  repair: "#fa8c16",
-  vendor_repair: "#d4380d",
-  installing: "#1677ff",
-  in_delivery: "#13c2c2",
-  in_stock: "#2f54eb",
-  on_farm: "#722ed1",
-  to_writeoff: "#d48806",
-  written_off: "#8c8c8c",
+  in_service: brand.green,
+  repair: "#A86B16",
+  vendor_repair: brand.error,
+  installing: brand.greenMuted,
+  in_delivery: "#437F8E",
+  in_stock: "#596B7C",
+  on_farm: "#77618F",
+  to_writeoff: "#8B6B38",
+  written_off: "#808080",
 };

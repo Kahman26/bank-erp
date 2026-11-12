@@ -63,6 +63,7 @@ export default function AtmForm(props: { open: boolean; onClose: () => void; onS
 
   return (
     <Drawer
+      aria-label={editing ? `Изменение ${editing.atm_code}` : "Новый банкомат"}
       title={editing ? `Изменение ${editing.atm_code}` : "Новый банкомат"}
       open={props.open}
       onClose={props.onClose}

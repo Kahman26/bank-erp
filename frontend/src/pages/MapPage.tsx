@@ -1,6 +1,6 @@
 import { UnorderedListOutlined } from "@ant-design/icons";
 import { useQuery } from "@tanstack/react-query";
-import { Alert, Button, Card, Space, Spin, Typography } from "antd";
+import { Alert, Button, Space, Spin, Typography } from "antd";
 import { useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
@@ -12,6 +12,7 @@ import FilterPanel from "@/atms/FilterPanel";
 import { filterParams } from "@/atms/filters";
 import { STATUS_COLORS } from "@/atms/statusColors";
 import type { MapPoints } from "@/atms/types";
+import PagePanel from "@/components/PagePanel";
 
 export default function MapPage() {
   const [params] = useSearchParams();
@@ -28,8 +29,9 @@ export default function MapPage() {
   const present = useMemo(() => new Set((data?.points ?? []).map((p) => p[4])), [data]);
 
   return (
-    <Card
+    <PagePanel
       title="Карта банкоматов"
+      description="Размещение устройств и статусы банкоматов по регионам"
       extra={
         <Button icon={<UnorderedListOutlined />} onClick={() => navigate(`/atms?${query}`)}>
           Списком
@@ -59,6 +61,6 @@ export default function MapPage() {
         />
       )}
       <AtmMap points={data?.points ?? []} statusNames={statusNames} height="calc(100vh - 330px)" />
-    </Card>
+    </PagePanel>
   );
 }

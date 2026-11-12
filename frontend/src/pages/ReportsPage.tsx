@@ -9,6 +9,8 @@ import { api } from "@/api/client";
 import { useReference } from "@/api/hooks";
 import { STATUS_COLORS } from "@/atms/statusColors";
 import { BarList, Columns, StackedBar } from "@/reports/charts";
+import { PageHeading } from "@/components/PagePanel";
+import { brand } from "@/theme/brand";
 
 interface Dashboard {
   totals: Record<string, number>;
@@ -37,13 +39,22 @@ function ExcelButton({ report }: { report: string }) {
 function Tile(props: { title: string; value?: number; suffix?: ReactNode; risk?: boolean; onClick?: () => void }) {
   const alert = props.risk && !!props.value;
   return (
-    <Card size="small" hoverable={!!props.onClick} onClick={props.onClick} style={{ height: "100%" }}>
+    <Card
+      className={"metric-card" + (props.title === "Банкоматов в сети" ? " metric-card-primary" : "")}
+      size="small"
+      hoverable={!!props.onClick}
+      onClick={props.onClick}
+      role={props.onClick ? "link" : undefined}
+      tabIndex={props.onClick ? 0 : undefined}
+      onKeyDown={(e) => { if (props.onClick && e.key === "Enter") props.onClick(); }}
+      style={{ height: "100%" }}
+    >
       <Statistic
         groupSeparator=" "
         title={props.title}
         value={props.value ?? "…"}
         suffix={props.suffix}
-        prefix={alert ? <WarningOutlined style={{ color: "#d4380d", fontSize: 18 }} /> : undefined}
+        prefix={alert ? <WarningOutlined style={{ color: brand.warning, fontSize: 18 }} /> : undefined}
       />
     </Card>
   );
@@ -60,8 +71,9 @@ export default function ReportsPage() {
   const tile = { xs: 12, md: 8, xl: 4 };
 
   return (
-    <div style={{ display: "grid", gap: 16 }}>
-      <Card title="Отчёты" loading={isLoading} styles={{ body: { paddingBottom: 8 } }}>
+    <div className="reports-page" style={{ display: "grid", gap: 16 }}>
+      <PageHeading title="Отчёты" description="Состояние сети, сервисное обслуживание и сроки действия документов" />
+      <Card loading={isLoading} styles={{ body: { paddingBottom: 24 } }}>
         <Typography.Paragraph type="secondary" style={{ marginTop: -8 }}>
           Данные на {dayjs().format("DD.MM.YYYY")}. Плитки открывают список с нужным фильтром, каждая таблица выгружается в Excel.
         </Typography.Paragraph>

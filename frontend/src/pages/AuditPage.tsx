@@ -1,10 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
-import { Card, DatePicker, Select, Space, Typography } from "antd";
+import { DatePicker, Select, Space, Typography } from "antd";
 import dayjs from "dayjs";
 import { useSearchParams } from "react-router-dom";
 
 import { api } from "@/api/client";
 import AuditTable from "@/audit/AuditTable";
+import PagePanel from "@/components/PagePanel";
 
 type Option = { value: string | number; label: string };
 
@@ -25,7 +26,7 @@ export default function AuditPage() {
   const to = params.get("date_to");
 
   return (
-    <Card title="Журнал изменений">
+    <PagePanel title="Журнал изменений" description="История изменений и входов в систему">
       <Typography.Paragraph type="secondary" style={{ marginTop: -8 }}>
         Кто, что и когда изменил в справочнике, а также входы в систему и неудачные попытки входа.
       </Typography.Paragraph>
@@ -72,6 +73,6 @@ export default function AuditPage() {
         />
       </Space>
       <AuditTable query={params.toString()} />
-    </Card>
+    </PagePanel>
   );
 }

@@ -1,11 +1,12 @@
 import { LockOutlined, UserOutlined } from "@ant-design/icons";
-import { Alert, Button, Card, Form, Input, Typography } from "antd";
+import { Alert, Button, Form, Input, Typography } from "antd";
 import { useState } from "react";
 
 import { api } from "@/api/client";
 import type { Me } from "@/api/types";
 import { useIsDemo } from "@/api/hooks";
 import { useAuth } from "@/auth/AuthContext";
+import AuthShell from "@/components/AuthShell";
 
 interface LoginForm {
   login: string;
@@ -31,28 +32,27 @@ export default function LoginPage() {
   };
 
   return (
-    <div style={{ minHeight: "100vh", display: "grid", placeItems: "center", background: "#f0f4f8", padding: 16 }}>
-      <Card style={{ width: "100%", maxWidth: 380 }}>
-        <Typography.Title level={3} style={{ marginTop: 0, color: "#1F4E79" }}>
-          Справочник банкоматов
-        </Typography.Title>
-        <Typography.Paragraph type="secondary">Войдите под своей учётной записью</Typography.Paragraph>
-        {demo && (
-          <Alert type="warning" showIcon style={{ marginBottom: 16 }} message="Демо-стенд: все данные вымышленные" />
-        )}
-        {error && <Alert type="error" message={error} showIcon style={{ marginBottom: 16 }} />}
-        <Form<LoginForm> layout="vertical" onFinish={onFinish} requiredMark={false}>
-          <Form.Item name="login" label="Логин" rules={[{ required: true, message: "Введите логин" }]}>
-            <Input prefix={<UserOutlined />} autoComplete="username" autoFocus />
-          </Form.Item>
-          <Form.Item name="password" label="Пароль" rules={[{ required: true, message: "Введите пароль" }]}>
-            <Input.Password prefix={<LockOutlined />} autoComplete="current-password" />
-          </Form.Item>
-          <Button type="primary" htmlType="submit" block loading={loading}>
-            Войти
-          </Button>
-        </Form>
-      </Card>
-    </div>
+    <AuthShell>
+      <span className="auth-form-eyebrow">Рабочее пространство</span>
+      <Typography.Title level={1}>
+        Вход в систему
+      </Typography.Title>
+      <Typography.Paragraph type="secondary">Войдите под своей учётной записью банка</Typography.Paragraph>
+      {demo && (
+        <Alert type="warning" showIcon style={{ marginBottom: 16 }} message="Демо-стенд: все данные вымышленные" />
+      )}
+      {error && <Alert type="error" message={error} showIcon style={{ marginBottom: 16 }} />}
+      <Form<LoginForm> size="large" layout="vertical" onFinish={onFinish} requiredMark={false}>
+        <Form.Item name="login" label="Логин" rules={[{ required: true, message: "Введите логин" }]}>
+          <Input prefix={<UserOutlined aria-hidden="true" />} placeholder="Введите логин" autoComplete="username" autoFocus />
+        </Form.Item>
+        <Form.Item name="password" label="Пароль" rules={[{ required: true, message: "Введите пароль" }]}>
+          <Input.Password prefix={<LockOutlined aria-hidden="true" />} placeholder="Введите пароль" autoComplete="current-password" />
+        </Form.Item>
+        <Button type="primary" htmlType="submit" block loading={loading}>
+          Войти
+        </Button>
+      </Form>
+    </AuthShell>
   );
 }

@@ -1,0 +1,79 @@
+{
+  "retrieved_on": "2026-11-12",
+  "brandbook": "https://hamkorbank.uz/about-bank/brand-book/",
+  "files": [
+    {
+      "file": "fonts/montserrat-cyrillic-ext-400.woff2",
+      "source": "https://hamkorbank.uz/_next/static/media/montserrat-cyrillic-ext-400-normal.2k-7aqp3js6ix.woff2",
+      "bytes": 11940,
+      "sha256": "d2b0f62ec1a296267618c01aae126ee87540b548f647776cd12dd9ef2a533265"
+    },
+    {
+      "file": "fonts/montserrat-cyrillic-400.woff2",
+      "source": "https://hamkorbank.uz/_next/static/media/montserrat-cyrillic-400-normal.0mj-hhmu-dpu3.woff2",
+      "bytes": 10980,
+      "sha256": "b2e276e2401a1539faea5639b69df0bfed888c2b26178d990c7af37a420a678b"
+    },
+    {
+      "file": "fonts/montserrat-latin-ext-400.woff2",
+      "source": "https://hamkorbank.uz/_next/static/media/montserrat-latin-ext-400-normal.0g0vmwulpnr89.woff2",
+      "bytes": 32272,
+      "sha256": "30f166cea0894715f7b1342798306dd4206bc1d0331440d543f6e7f7fff04539"
+    },
+    {
+      "file": "fonts/montserrat-latin-400.woff2",
+      "source": "https://hamkorbank.uz/_next/static/media/montserrat-latin-400-normal.2pd8xj29-n0_9.woff2",
+      "bytes": 18780,
+      "sha256": "e66bcd2761ab6924b25ce70dafe10e57a39193c4fea1516730bd9cb5240af6c8"
+    },
+    {
+      "file": "fonts/montserrat-cyrillic-ext-600.woff2",
+      "source": "https://hamkorbank.uz/_next/static/media/montserrat-cyrillic-ext-600-normal.271p0b-2yjnf5.woff2",
+      "bytes": 12060,
+      "sha256": "5cdc3c54c076ef8ce55a8e21e306c9a57720c48b5f77853e28a6abd62aa23c15"
+    },
+    {
+      "file": "fonts/montserrat-cyrillic-600.woff2",
+      "source": "https://hamkorbank.uz/_next/static/media/montserrat-cyrillic-600-normal.3b3h2e58lv6ry.woff2",
+      "bytes": 11120,
+      "sha256": "12fe2b174f70b732553c46dae097be6a70b3f4a3d3cf305dbbbf236ac3b182b7"
+    },
+    {
+      "file": "fonts/montserrat-latin-ext-600.woff2",
+      "source": "https://hamkorbank.uz/_next/static/media/montserrat-latin-ext-600-normal.09_5_ciaxb117.woff2",
+      "bytes": 33192,
+      "sha256": "1d8a4af6a50cc4f7561e8484d5bff39acda90016b8e8cbb5cee69c253bb02750"
+    },
+    {
+      "file": "fonts/montserrat-latin-600.woff2",
+      "source": "https://hamkorbank.uz/_next/static/media/montserrat-latin-600-normal.1-yd62cz1txzx.woff2",
+      "bytes": 18688,
+      "sha256": "d857325c360f7128b347ca924c1974967aaa886ba47dad22e4042d6c38b26a83"
+    },
+    {
+      "file": "fonts/golos-text-regular.woff2",
+      "source": "https://hamkorbank.uz/assets/components/hamkorbank/fonts/golos-text-400-normal.woff2",
+      "bytes": 29516,
+      "sha256": "7516637c6200b93e8a3b71aaa78a3cabe4ed9ac61d46f0966f80b1e9e712889d"
+    },
+    {
+      "file": "fonts/golos-text-medium.woff2",
+      "source": "https://hamkorbank.uz/assets/components/hamkorbank/fonts/golos-text-500-normal.woff2",
+      "bytes": 30228,
+      "sha256": "9ab71404bcf61dbf545a0c39f6e6b71c232e518cb04b81744b4de152a6ad0c1c"
+    },
+    {
+      "file": "hamkorbank-logo.svg",
+      "source": "https://hamkorbank.uz/assets/images/static/logo.svg",
+      "bytes": 5193,
+      "sha256": "86d4648ae24d9addd33756f4c9f79269f6982e8920bff94af8338c3a1bd97d58"
+    },
+    {
+      "file": "hamkorbank-mark.svg",
+      "source": "https://hamkorbank.uz/assets/images/static/logo.svg",
+      "note": "Unmodified emblem path with a square viewBox; original colours and geometry preserved.",
+      "bytes": 892,
+      "sha256": "f94345e9eaa5178c3fc16e7834f8fd62d1c274d3dea76bb0601a0adab0449df2"
+    }
+  ]
+}
